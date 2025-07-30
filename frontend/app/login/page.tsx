@@ -55,7 +55,7 @@ export default function LoginPage() {
           <Logo />
           
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">ระบบบริหารงานขายและการตลาด</h1>
+            <h1 className="text-2xl font-bold text-gray-800">ระบบบริหารงานขายและการตลาด ddd</h1>
             <p className="text-gray-600">Customer Relationship Management (CRM)</p>
           </div>
 

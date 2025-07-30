@@ -9,11 +9,9 @@ services:
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
-    # Corrected command:
-    # 1. Run `npx prisma generate` to ensure the client is always ready.
-    # 2. Then, start the development server in watch mode.
     command: sh -c "npx prisma generate && npm run start:dev"
     environment:
+      # This enables polling mode, which is a reliable way to detect file changes in Docker.
       - CHOKIDAR_USEPOLLING=true
 
   frontend:
@@ -25,4 +23,5 @@ services:
       - /app/node_modules
     command: npm run dev
     environment:
+      # This enables polling mode for Next.js hot reloading.
       - CHOKIDAR_USEPOLLING=true
