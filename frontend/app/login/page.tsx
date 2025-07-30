@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
-import { toast } from 'sonner';
-import Link from 'next/link';
-import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
+import { toast } from "sonner";
+import Link from "next/link";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
 
 // --- Type Definition for Form Inputs ---
 type LoginFormInputs = {
@@ -19,7 +19,19 @@ const Logo = () => (
   <div className="flex flex-col items-center justify-center bg-white p-4 border-2 border-gray-200 rounded-lg shadow-md -mt-20 mb-6 w-40 h-40 mx-auto">
     <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-md mb-2">
       {/* You can replace this with a real logo using Next.js <Image> component */}
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
     </div>
     <div className="bg-black text-white text-center text-lg font-bold px-4 py-1 rounded-md">
       ตราปืนใหญ่
@@ -29,16 +41,23 @@ const Logo = () => (
 
 // --- Main Login Page Component ---
 export default function LoginPage() {
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormInputs>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormInputs>();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
-      const response = await api.post('/auth/login', data);
+      const response = await api.post("/auth/login", data);
       login(response.data.accessToken, response.data.refreshToken);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+      toast.error(
+        error.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      );
     }
   };
 
@@ -53,31 +72,45 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-lg px-4">
         <div className="bg-white/80 backdrop-blur-sm p-8 pt-24 rounded-2xl shadow-2xl">
           <Logo />
-          
+
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">ระบบบริหารงานขายและการตลาด ddd</h1>
-            <p className="text-gray-600">Customer Relationship Management (CRM)</p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              ระบบบริหารงานขายและการตลาด
+            </h1>
+            <p className="text-gray-600">
+              Customer Relationship Management (CRM)
+            </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                E-mail
+              </label>
               <input
                 type="email"
                 placeholder="youremail@gmail.com"
-                {...register('email', { required: 'Email is required' })}
+                {...register("email", { required: "Email is required" })}
                 className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent transition"
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="********"
-                  {...register('password', { required: 'Password is required' })}
+                  {...register("password", {
+                    required: "Password is required",
+                  })}
                   className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent transition pr-10"
                 />
                 <button
@@ -88,15 +121,33 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+              {errors.password && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center">
-                <input id="remember-me" type="checkbox" className="h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500" />
-                <label htmlFor="remember-me" className="ml-2 block text-gray-800">บันทึกรหัส</label>
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-gray-600 border-gray-300 rounded focus:ring-gray-500"
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-gray-800"
+                >
+                  บันทึกรหัส
+                </label>
               </div>
-              <Link href="#" className="font-medium text-gray-600 hover:text-gray-900">ลืมรหัสผ่าน</Link>
+              <Link
+                href="#"
+                className="font-medium text-gray-600 hover:text-gray-900"
+              >
+                ลืมรหัสผ่าน
+              </Link>
             </div>
 
             <button
@@ -104,7 +155,7 @@ export default function LoginPage() {
               disabled={isSubmitting}
               className="w-full flex items-center justify-center py-3 px-4 text-white bg-gray-700 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-transform transform hover:scale-105 disabled:bg-gray-400"
             >
-              {isSubmitting ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
+              {isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
               {!isSubmitting && <ArrowRight className="ml-2" size={20} />}
             </button>
           </form>
