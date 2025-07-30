@@ -1,0 +1,19 @@
+# Environment variables
+# Never commit this file!
+.env
+.env*.local
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# IDE and OS files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+.DS_Store

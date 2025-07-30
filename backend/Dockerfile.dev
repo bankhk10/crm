@@ -1,0 +1,18 @@
+# Use the same base image for consistency
+FROM node:18-slim
+
+# Install OpenSSL, which is recommended by Prisma
+RUN apt-get update && apt-get install -y openssl
+
+WORKDIR /usr/src/app
+
+# Copy only package files to leverage Docker's layer caching
+COPY package*.json ./
+
+# Install all dependencies, including devDependencies like ts-node
+RUN npm install
+
+# The source code will be mounted via docker-compose, so we don't copy it here.
+# The command to run the app is also provided by docker-compose.
+# This default CMD is a fallback.
+CMD ["npm", "run", "start:dev"]

@@ -1,0 +1,28 @@
+# This file is specifically for development and overrides the base docker-compose.yml
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    # Corrected command:
+    # 1. Run `npx prisma generate` to ensure the client is always ready.
+    # 2. Then, start the development server in watch mode.
+    command: sh -c "npx prisma generate && npm run start:dev"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      - CHOKIDAR_USEPOLLING=true

@@ -1,0 +1,12 @@
+FROM node:18-slim
+
+WORKDIR /app
+
+COPY package*.json ./
+
+# Install all dependencies for the development environment
+RUN npm install
+
+# The source code will be mounted via docker-compose.
+# The command is also provided by docker-compose.
+CMD ["npm", "run", "dev"]
