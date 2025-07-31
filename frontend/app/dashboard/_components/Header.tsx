@@ -1,23 +1,31 @@
 'use client';
 
-import { Bell, Globe, UserCircle, LogOut } from 'lucide-react';
+import { Bell, Globe, UserCircle, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-export default function Header({ user }: { user: any }) {
+export default function Header({ user, onMenuClick }: { user: any; onMenuClick: () => void }) {
   const { logout } = useAuth();
 
   return (
-    <header className="bg-white shadow-sm p-4 flex justify-end items-center">
-      <div className="flex items-center space-x-6 text-gray-600">
+    <header className="bg-white shadow-sm p-4 flex justify-between items-center">
+      {/* Hamburger Menu Button for Mobile */}
+      <button onClick={onMenuClick} className="text-gray-600 md:hidden">
+        <Menu size={24} />
+      </button>
+
+      {/* Spacer to push other items to the right on desktop */}
+      <div className="hidden md:block flex-1"></div>
+
+      <div className="flex items-center space-x-4 md:space-x-6 text-gray-600">
         <button className="hover:text-gray-900"><Bell size={22} /></button>
         <button className="hover:text-gray-900"><Globe size={22} /></button>
         <div className="flex items-center space-x-2">
           <UserCircle size={24} />
-          <span className="font-medium">{user?.name || 'Admin'}</span>
+          <span className="font-medium hidden sm:inline">{user?.name || 'Admin'}</span>
         </div>
         <button onClick={logout} className="flex items-center text-red-500 hover:text-red-700 font-semibold">
           <LogOut size={20} className="mr-1" />
-          Logout
+          <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
     </header>
