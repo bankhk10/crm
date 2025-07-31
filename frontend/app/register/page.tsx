@@ -46,10 +46,12 @@ export default function RegisterPage() {
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center bg-[#F3F4F6] overflow-hidden">
       {/* Background Shapes */}
-      <div className="absolute top-[-20%] right-[-20%] w-[600px] h-[600px] bg-[#D42A2A] rounded-full opacity-90"></div>
-      <div className="absolute bottom-[-30%] left-[-25%] w-[700px] h-[700px] bg-[#D42A2A] rounded-full opacity-90"></div>
-      <div className="absolute bottom-[-25%] left-[-20%] w-[600px] h-[600px] bg-white rounded-full"></div>
-      <div className="absolute bottom-[-20%] left-[-15%] w-[500px] h-[500px] bg-gray-300 rounded-full"></div>
+      <div className="absolute top-[-20%] right-[-20%] w-[600px] h-[600px] bg-[#D42A2A] rounded-full"></div>
+      
+      {/* Corrected Bottom Left Shapes */}
+      <div className="absolute bottom-[-30%] left-[-30%] w-[700px] h-[700px] bg-[#D42A2A] rounded-full"></div>
+      <div className="absolute bottom-[-25%] left-[-25%] w-[600px] h-[600px] bg-white rounded-full"></div>
+      <div className="absolute bottom-[-20%] left-[-20%] w-[500px] h-[500px] bg-gray-300 rounded-full"></div>
 
       <div className="relative z-10 w-full max-w-lg px-4">
         <div className="bg-white/80 backdrop-blur-sm p-8 pt-24 rounded-2xl shadow-2xl">

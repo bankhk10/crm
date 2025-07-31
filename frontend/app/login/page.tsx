@@ -18,7 +18,6 @@ type LoginFormInputs = {
 const Logo = () => (
   <div className="flex flex-col items-center justify-center bg-white p-4 border-2 border-gray-200 rounded-lg shadow-md -mt-20 mb-6 w-40 h-40 mx-auto">
     <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-md mb-2">
-      {/* You can replace this with a real logo using Next.js <Image> component */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="48"
@@ -62,13 +61,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center bg-[#F3F4F6] overflow-hidden">
-      {/* Background Shapes */}
-      <div className="absolute top-[-20%] right-[-20%] w-[600px] h-[600px] bg-[#D42A2A] rounded-full opacity-90"></div>
-      <div className="absolute bottom-[-30%] left-[-25%] w-[700px] h-[700px] bg-[#D42A2A] rounded-full opacity-90"></div>
-      <div className="absolute bottom-[-25%] left-[-20%] w-[600px] h-[600px] bg-white rounded-full"></div>
-      <div className="absolute bottom-[-20%] left-[-15%] w-[500px] h-[500px] bg-gray-300 rounded-full"></div>
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-[#f3f6f8] overflow-hidden">
+      {/* === Red Top-Right Blob === */}
+      <svg
+        className="absolute top-0 right-0 w-full h-full z-0"
+        viewBox="0 0 800 600"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M250,0 C300,100 600,100 700,200 C800,300 450,500 800,600 L800,0 Z"
+          fill="#D42A2A"
+        />
+      </svg>
 
+      {/* === Concentric Circles Bottom Left === */}
+      <div className="absolute bottom-[-180px] left-[-180px] w-[500px] h-[500px] rounded-full bg-[#D42A2A] flex items-center justify-center">
+        <div className="w-[400px] h-[400px] rounded-full bg-white flex items-center justify-center">
+          <div className="w-[300px] h-[300px] rounded-full bg-gray-400"></div>
+        </div>
+      </div>
+
+      {/* === Login Form === */}
       <div className="relative z-10 w-full max-w-lg px-4">
         <div className="bg-white/80 backdrop-blur-sm p-8 pt-24 rounded-2xl shadow-2xl">
           <Logo />
@@ -153,7 +167,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex items-center justify-center py-3 px-4 text-white bg-gray-700 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-transform transform hover:scale-105 disabled:bg-gray-400"
+              className="w-full flex items-center justify-center py-3 px-4 text-white bg-gray-500 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-transform transform hover:scale-105 disabled:bg-gray-400"
             >
               {isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
               {!isSubmitting && <ArrowRight className="ml-2" size={20} />}
