@@ -5,8 +5,9 @@ services:
     image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
     command:
       - "--structured-logs"
+      - "--address=0.0.0.0" # <-- This is the crucial fix
       - "--port=3306"
-      - "webprojectbank:asia-southeast1:crm-mysql-instance" # <-- แก้ไขตรงนี้
+      - "webprojectbank:asia-southeast1:crm-mysql-instance" # Your instance connection name
     restart: always
     networks:
       - crm-network
@@ -19,13 +20,12 @@ services:
     depends_on:
       - db-proxy
     ports:
-      - "3001:8080" # Map port 8080 inside container to 3001 on VM
+      - "3001:8080"
     environment:
-      # DATABASE_URL now points to the proxy service
       DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db-proxy:3306/${DB_NAME}"
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      PORT: 8080 # Tell the app to listen on port 8080
+      PORT: 8080
     networks:
       - crm-network
 
@@ -37,7 +37,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Frontend talks to backend via its service name on the Docker network
+      # Use the internal Docker network service name for communication
       NEXT_PUBLIC_API_URL: http://backend:8080
     depends_on:
       - backend
