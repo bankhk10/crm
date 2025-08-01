@@ -22,16 +22,15 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar component now receives state for mobile view */}
+    // 1. เปลี่ยนพื้นหลังหลักของทั้งหน้าเป็นสีแดง
+    <div className="flex h-screen bg-[#D42A2A]">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header component receives a function to toggle the sidebar */}
         <Header user={user} onMenuClick={() => setIsSidebarOpen(true)} />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-4 md:p-8">
-          {/* The main content area */}
+        {/* 2. ทำให้พื้นที่แสดงเนื้อหามีพื้นหลังสีเทาและเพิ่มมุมโค้งมนที่สวยงามด้านบนซ้าย */}
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 rounded-tl-3xl p-4 md:p-8">
           {children}
         </main>
       </div>
