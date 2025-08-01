@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 // --- Type Definition for Form Inputs ---
 type LoginFormInputs = {
@@ -17,26 +18,19 @@ type LoginFormInputs = {
 // --- Placeholder Logo Component ---
 const Logo = () => (
   <div className="flex flex-col items-center justify-center bg-white p-4 border-2 border-gray-200 rounded-lg shadow-md -mt-20 mb-6 w-40 h-40 mx-auto">
-    <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-md mb-2">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="48"
-        height="48"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-      </svg>
-    </div>
-    <div className="bg-black text-white text-center text-lg font-bold px-4 py-1 rounded-md">
-      ตราปืนใหญ่
+    <div className="relative w-30 h-30 rounded-md mb-2 overflow-hidden">
+      <Image
+        src="/images/logo.jpg"
+        alt="Logo"
+        fill
+        className="object-cover"
+        sizes="80px"
+      />
     </div>
   </div>
 );
+
+
 
 // --- Main Login Page Component ---
 export default function LoginPage() {
