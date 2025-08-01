@@ -59,7 +59,6 @@ const NavItem = ({ item, isOpen, onClick, onLinkClick }: { item: any, isOpen: bo
   if (item.children) {
     return (
       <div>
-        {/* Corrected: Use rounded-full for hover state as well */}
         <button onClick={onClick} className={`w-full flex items-center justify-between p-3 text-white cursor-pointer transition-colors rounded-full ${isParentActive ? 'bg-red-800' : 'hover:bg-red-700'}`}>
           <div className="flex items-center">
             <item.icon className="mr-4" size={20} />
@@ -85,7 +84,6 @@ const NavItem = ({ item, isOpen, onClick, onLinkClick }: { item: any, isOpen: bo
   const isActive = pathname === item.href;
   return (
     <Link href={item.href} onClick={onLinkClick}>
-      {/* Corrected: Use rounded-full for hover state as well */}
       <div className={`flex items-center p-3 text-white cursor-pointer transition-colors rounded-full ${isActive ? 'bg-red-800 text-white font-bold' : 'hover:bg-red-700'}`}>
         <item.icon className="mr-4" size={20} />
         <span>{item.label}</span>
@@ -99,12 +97,19 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
+  // This effect ensures the correct submenu is open based on the current URL
   useEffect(() => {
+    // Find if the current path belongs to a parent menu with children
     const parentMenu = navItems.find(item => item.children && pathname.startsWith(item.href));
+    
     if (parentMenu) {
+      // If it does, set that parent menu as open
       setOpenMenu(parentMenu.href);
+    } else {
+      // If the current path is not part of any submenu, close all submenus
+      setOpenMenu(null);
     }
-  }, [pathname]);
+  }, [pathname]); // This effect re-runs every time the URL changes
 
   const handleMenuClick = (href: string) => {
     setOpenMenu(openMenu === href ? null : href);
@@ -126,7 +131,7 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
         </button>
         <Logo />
         
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto pb-4">
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4">
           {navItems.map((item) => (
             <NavItem 
               key={item.href} 
