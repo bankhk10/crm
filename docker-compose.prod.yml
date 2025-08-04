@@ -7,7 +7,8 @@ services:
       - "--structured-logs"
       - "--address=0.0.0.0"
       - "--port=3306"
-      - "webprojectbank:asia-southeast1:crm-mysql-instance" # <-- ตรวจสอบว่าตรงกับของคุณ
+      - "--private-ip" # <-- This is the crucial fix
+      - "webprojectbank:asia-southeast1:crm-mysql-instance" # Your instance connection name
     restart: always
     networks:
       - crm-network
