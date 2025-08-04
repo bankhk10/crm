@@ -1,14 +1,17 @@
 version: '3.8'
 
 services:
-  db-proxy:
-    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
-    command:
-      - "--structured-logs"
-      - "--address=0.0.0.0"
-      - "--port=3306"
-      - "webprojectbank:asia-southeast1:crm-mysql-instance" # <-- ตรวจสอบว่าตรงกับของคุณ
+  db:
+    image: mysql:8.0
+    container_name: crm_db_prod
     restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data_prod:/var/lib/mysql
     networks:
       - crm-network
 
@@ -19,11 +22,12 @@ services:
     container_name: crm_backend_prod
     restart: always
     depends_on:
-      - db-proxy
+      - db
     ports:
       - "3001:8080"
     environment:
-      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db-proxy:3306/${DB_NAME}"
+      # This now correctly points to the 'db' service
+      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       PORT: 8080
@@ -44,6 +48,9 @@ services:
       - backend
     networks:
       - crm-network
+
+volumes:
+  db_data_prod:
 
 networks:
   crm-network:
