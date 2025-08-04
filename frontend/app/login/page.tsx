@@ -15,7 +15,7 @@ type LoginFormInputs = {
   password: string;
 };
 
-// --- Logo Component (Corrected) ---
+// --- Placeholder Logo Component ---
 const Logo = () => (
   // This is the main container for the logo, positioned above the form.
   <div className="flex flex-col items-center justify-center -mt-20 mb-6 mx-auto">
@@ -161,6 +161,7 @@ export default function LoginPage() {
                 type="submit"
                 disabled={isSubmitting}
                 className="w-fit flex items-center justify-center py-2 px-4 text-white bg-gray-500 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-transform transform hover:scale-105 disabled:bg-gray-400 mt-4"
+                // className="w-full flex items-center justify-center py-3 px-4 text-white bg-gray-500 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-transform transform hover:scale-105 disabled:bg-gray-400"
               >
                 {isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
                 {!isSubmitting && <ArrowRight className="ml-2" size={20} />}
