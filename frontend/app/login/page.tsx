@@ -15,16 +15,19 @@ type LoginFormInputs = {
   password: string;
 };
 
-// --- Placeholder Logo Component ---
+// --- Logo Component (Corrected) ---
 const Logo = () => (
-  <div className="flex flex-col items-center justify-center bg-white p-4 border-2 border-gray-200 rounded-lg shadow-md -mt-20 mb-6 w-40 h-40 mx-auto">
-    <div className="relative w-30 h-30 rounded-md mb-2 overflow-hidden">
+  // This is the main container for the logo, positioned above the form.
+  <div className="flex flex-col items-center justify-center -mt-20 mb-6 mx-auto">
+    {/* This div is the actual visual frame for the logo image */}
+    <div className="relative w-36 h-36 bg-white border-2 border-gray-200 rounded-lg shadow-md overflow-hidden p-2">
       <Image
-        src="/images/logo.jpg"
+        src="/images/logo.jpg" // Assuming you have placed your logo at /public/images/logo.jpg
         alt="Logo"
         fill
-        className="object-cover"
-        sizes="80px"
+        // 'object-contain' ensures the entire image fits within the container without being cropped.
+        className="object-contain"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
     </div>
   </div>
@@ -153,14 +156,16 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full flex items-center justify-center py-3 px-4 text-white bg-gray-500 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-transform transform hover:scale-105 disabled:bg-gray-400"
-            >
-              {isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
-              {!isSubmitting && <ArrowRight className="ml-2" size={20} />}
-            </button>
+            <div className="flex justify-center">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-fit flex items-center justify-center py-2 px-4 text-white bg-gray-500 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-transform transform hover:scale-105 disabled:bg-gray-400 mt-4"
+              >
+                {isSubmitting ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+                {!isSubmitting && <ArrowRight className="ml-2" size={20} />}
+              </button>
+            </div>
           </form>
         </div>
       </div>
