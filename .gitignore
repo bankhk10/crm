@@ -2,6 +2,12 @@
 # Never commit this file!
 .env
 .env*.local
+# Environment variables
+.env
+.env*.local
+.env.development
+.env.production
+
 
 # Docker
 .dockerignore

@@ -1,9 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // This option is crucial for the Docker production image.
-  // It tells Next.js to create a standalone folder with only
-  // the necessary files for production, making the image smaller.
-  output: 'standalone',
+  webpackDevMiddleware: config => {
+    config.watchOptions = {
+      poll: 1000, // ตรวจสอบทุก 1 วินาที
+      aggregateTimeout: 300,
+    };
+    return config;
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

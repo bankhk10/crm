@@ -7,31 +7,37 @@ DB_USER=crm_user
 DB_PASSWORD=your_strong_db_password
 
 # JWT Secrets (เปลี่ยนเป็นค่าสุ่มที่คาดเดายาก)
+
 JWT_SECRET=your-super-secret-key-for-jwt
 JWT_REFRESH_SECRET=your-super-secret-key-for-refresh-token
-การรันโปรเจกต์โปรเจกต์นี้มี 2 โหมดในการรัน:模式 1: โหมดพัฒนา (Development Mode) - แนะนำโหมดนี้จะเปิดใช้งาน Hot Reloading ซึ่งเมื่อคุณแก้ไขโค้ดและบันทึก, เว็บแอปพลิเคชันจะรีเฟรชตัวเองโดยอัตโนมัติ เหมาะสำหรับการพัฒนาฟีเจอร์ใหม่ๆdocker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
-模式 2: โหมดใช้งานจริง (Production Mode)โหมดนี้จะจำลองสภาพแวดล้อมเหมือนตอนนำไปใช้งานจริง โดยจะสร้างแอปพลิเคชันเวอร์ชันสมบูรณ์ที่ถูก Optimize แล้ว (ไม่มี Hot Reloading)docker-compose up --build
+การรันโปรเจกต์โปรเจกต์นี้มี 2 โหมดในการรัน: 
+1: โหมดพัฒนา (Development Mode) - แนะนำโหมดนี้จะเปิดใช้งาน Hot Reloading ซึ่งเมื่อคุณแก้ไขโค้ดและบันทึก, เว็บแอปพลิเคชันจะรีเฟรชตัวเองโดยอัตโนมัติ เหมาะสำหรับการพัฒนาฟีเจอร์ใหม่ๆ 
+
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+
+2: โหมดใช้งานจริง (Production Mode)โหมดนี้จะจำลองสภาพแวดล้อมเหมือนตอนนำไปใช้งานจริง โดยจะสร้างแอปพลิเคชันเวอร์ชันสมบูรณ์ที่ถูก Optimize แล้ว (ไม่มี Hot Reloading)docker-compose up --build
 การเข้าใช้งานFrontend: http://localhost:3000Backend API Docs (Swagger): http://localhost:3001/api
 
-ข้อมูลสำหรับเข้าสู่ระบบเริ่มต้น 
+ข้อมูลสำหรับเข้าสู่ระบบเริ่มต้น
 
-Email: admin@example.com 
+Email: admin@example.com
 Password: password123
 
 📂 โครงสร้างโปรเจกต์ (เวอร์ชันล่าสุด)project-root/
 ├─ backend/
-│  ├─ prisma/
-│  ├─ src/
-│  ├─ .gitignore
-│  ├─ Dockerfile
-│  └─ Dockerfile.dev
+│ ├─ prisma/
+│ ├─ src/
+│ ├─ .gitignore
+│ ├─ Dockerfile
+│ └─ Dockerfile.dev
 ├─ frontend/
-│  ├─ app/
-│  ├─ lib/
-│  ├─ public/
-│  ├─ .gitignore
-│  ├─ Dockerfile
-│  └─ Dockerfile.dev
+│ ├─ app/
+│ ├─ lib/
+│ ├─ public/
+│ ├─ .gitignore
+│ ├─ Dockerfile
+│ └─ Dockerfile.dev
 ├─ .gitignore
 ├─ docker-compose.yml
 ├─ docker-compose.dev.yml

@@ -1,8 +1,12 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  // ลบหรือย้าย webpackDevMiddleware ไปไว้ใน custom server (เฉพาะ development เท่านั้น)
+  webpackDevMiddleware: config => {
+    config.watchOptions = {
+      poll: 1000, // ตรวจสอบทุก 1 วินาที
+      aggregateTimeout: 300,
+    };
+    return config;
+  },
 };
 
 module.exports = nextConfig;

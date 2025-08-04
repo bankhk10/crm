@@ -30,8 +30,6 @@ const Logo = () => (
   </div>
 );
 
-
-
 // --- Main Login Page Component ---
 export default function LoginPage() {
   const {
@@ -80,7 +78,6 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-lg px-4">
         <div className="bg-white/80 backdrop-blur-sm p-8 pt-24 rounded-2xl shadow-2xl">
           <Logo />
-
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-800">
               ระบบบริหารงานขายและการตลาด
@@ -89,7 +86,6 @@ export default function LoginPage() {
               Customer Relationship Management (CRM)
             </p>
           </div>
-
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -107,7 +103,6 @@ export default function LoginPage() {
                 </p>
               )}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password
