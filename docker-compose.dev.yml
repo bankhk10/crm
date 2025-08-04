@@ -1,27 +1,58 @@
-# This file is specifically for development and overrides the base docker-compose.yml
 version: '3.8'
 
 services:
+  db:
+    image: mysql:8.0
+    container_name: crm_db_prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data_prod:/var/lib/mysql
+    networks:
+      - crm-network
+
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./backend:/usr/src/app
-      - /usr/src/app/node_modules
-    command: sh -c "npx prisma generate && npm run start:dev"
+      dockerfile: Dockerfile
+    container_name: crm_backend_prod
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "3001:8080"
     environment:
-      # This enables polling mode, which is a reliable way to detect file changes in Docker.
-      - CHOKIDAR_USEPOLLING=true
+      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      PORT: 8080
+    networks:
+      - crm-network
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev
+      dockerfile: Dockerfile
+    container_name: crm_frontend_prod
+    restart: always
+    ports:
+      - "3000:3000"
     environment:
-      # This enables polling mode for Next.js hot reloading.
-      - CHOKIDAR_USEPOLLING=true
+      # This URL is used by the user's browser to talk to the backend.
+      # It must be the public IP of your VM.
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    depends_on:
+      - backend
+    networks:
+      - crm-network
+
+volumes:
+  db_data_prod:
+
+networks:
+  crm-network:
+    driver: bridge
