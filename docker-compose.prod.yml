@@ -1,24 +1,17 @@
-# === PRODUCTION ENVIRONMENT ===
+# === PRODUCTION ENVIRONMENT (with Google Cloud SQL) ===
+# Use this file for deploying on a VM.
 version: '3.8'
 
 services:
-  db:
-    image: mysql:8.0
-    container_name: crm_db_prod
+  db-proxy:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
+    container_name: crm_db_proxy_prod
+    command:
+      - "--structured-logs"
+      - "--address=0.0.0.0"
+      - "--port=3306"
+      - "webprojectbank:asia-southeast1:crm-mysql-instance" # <-- แก้ไขให้เป็น Instance Connection Name ของคุณ
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - db_data_prod:/var/lib/mysql
-    # --- ADDED HEALTHCHECK ---
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER}", "-p${DB_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - crm-network-prod
 
@@ -28,14 +21,12 @@ services:
       dockerfile: Dockerfile
     container_name: crm_backend_prod
     restart: always
-    # --- UPDATED depends_on ---
     depends_on:
-      db:
-        condition: service_healthy
+      - db-proxy
     ports:
       - "3001:8080"
     environment:
-      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
+      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db-proxy:3306/${DB_NAME}"
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       PORT: 8080
@@ -56,9 +47,6 @@ services:
       - backend
     networks:
       - crm-network-prod
-
-volumes:
-  db_data_prod:
 
 networks:
   crm-network-prod:
