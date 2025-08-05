@@ -43,4 +43,5 @@ Password: password123
 ├─ docker-compose.dev.yml
 ├─ .env
 └─ README.md
+
 🛑 การหยุดโปรเจกต์หากต้องการหยุดการทำงานของ Container ทั้งหมด ให้กด Ctrl + C ใน Terminal แล้วรันคำสั่ง:docker-compose down
