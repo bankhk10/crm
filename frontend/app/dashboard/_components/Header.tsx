@@ -7,16 +7,11 @@ export default function Header({ user, onMenuClick }: { user: any; onMenuClick: 
   const { logout } = useAuth();
 
   return (
-    // 1. เปลี่ยนพื้นหลังเป็นโปร่งใส และเปลี่ยนสีข้อความ/ไอคอนเป็นสีขาว
-    <header className="bg-transparent text-white p-4 flex justify-between items-center">
-      {/* Hamburger Menu Button for Mobile */}
+    <header className="bg-transparent text-white px-4 py-6 flex justify-between items-center">
       <button onClick={onMenuClick} className="md:hidden">
         <Menu size={24} />
       </button>
-
-      {/* Spacer to push other items to the right on desktop */}
       <div className="hidden md:block flex-1"></div>
-
       <div className="flex items-center space-x-4 md:space-x-6">
         <button className="hover:text-gray-200"><Bell size={22} /></button>
         <button className="hover:text-gray-200"><Globe size={22} /></button>

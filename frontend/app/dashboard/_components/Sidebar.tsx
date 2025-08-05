@@ -1,76 +1,117 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
-import { 
-  BarChart2, Activity, Calendar, Map, Box, ShoppingCart, 
-  Megaphone, Users, UserCog, X, ChevronDown 
-} from 'lucide-react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import {
+  BarChart2,
+  Activity,
+  Calendar,
+  Map,
+  Box,
+  ShoppingCart,
+  Megaphone,
+  Users,
+  UserCog,
+  X,
+  ChevronDown,
+} from "lucide-react";
+import Image from "next/image";
+
 
 // --- Data structure for navigation items ---
 const navItems = [
-  { href: '/dashboard', label: 'รายงาน', icon: BarChart2 },
-  { href: '/dashboard/activities', label: 'กิจกรรม', icon: Activity },
-  { href: '/dashboard/calendar', label: 'ปฏิทิน', icon: Calendar },
-  { href: '/dashboard/map', label: 'แผนที่', icon: Map },
-  { href: '/dashboard/products', label: 'สินค้า', icon: Box },
-  { 
-    href: '/dashboard/sales', 
-    label: 'การขาย', 
+  { href: "/dashboard", label: "รายงาน", icon: BarChart2 },
+  { href: "/dashboard/activities", label: "กิจกรรม", icon: Activity },
+  { href: "/dashboard/calendar", label: "ปฏิทิน", icon: Calendar },
+  { href: "/dashboard/map", label: "แผนที่", icon: Map },
+  { href: "/dashboard/products", label: "สินค้า", icon: Box },
+  {
+    href: "/dashboard/sales",
+    label: "การขาย",
     icon: ShoppingCart,
     children: [
-      { href: '/dashboard/sales/orders', label: 'รายการขาย' },
-      { href: '/dashboard/sales/quotations', label: 'ใบเสนอราคา' },
-    ]
+      { href: "/dashboard/sales/orders", label: "รายการขาย" },
+      { href: "/dashboard/sales/quotations", label: "ใบเสนอราคา" },
+    ],
   },
-  { href: '/dashboard/marketing', label: 'การตลาด', icon: Megaphone },
-  { 
-    href: '/dashboard/customers', 
-    label: 'ลูกค้า', 
+  { href: "/dashboard/marketing", label: "การตลาด", icon: Megaphone },
+  {
+    href: "/dashboard/customers",
+    label: "ลูกค้า",
     icon: Users,
     children: [
-      { href: '/dashboard/customers/list', label: 'รายชื่อลูกค้า' },
-      { href: '/dashboard/customers/create', label: 'สร้างลูกค้าใหม่' },
-    ]
+      { href: "/dashboard/customers/list", label: "รายชื่อลูกค้า" },
+      { href: "/dashboard/customers/create", label: "สร้างลูกค้าใหม่" },
+    ],
   },
-  { href: '/admin/users', label: 'พนักงาน', icon: UserCog },
+  { href: "/admin/users", label: "พนักงาน", icon: UserCog },
 ];
 
-// --- Logo Component ---
 const Logo = () => (
-  <div className="bg-white p-4 flex items-center justify-center mb-8">
-    <div className="flex flex-col items-center">
-      <div className="w-24 h-24 bg-gray-200 flex items-center justify-center rounded-md mb-2">
-        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-      </div>
-      <div className="bg-black text-white text-center text-lg font-bold px-6 py-1 rounded-md">
-        ตราปืนใหญ่
-      </div>
+  <div className="bg-red-650 p-4 flex items-center justify-center mb-8">
+    <div className="relative w-36 h-36 rounded-lg overflow-hidden p-2">
+      <Image
+        src="/images/logo.jpg" 
+        alt="Logo"
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      />
     </div>
   </div>
 );
 
 // --- NavItem Component ---
-const NavItem = ({ item, isOpen, onClick, onLinkClick }: { item: any, isOpen: boolean, onClick: () => void, onLinkClick: () => void }) => {
+const NavItem = ({
+  item,
+  isOpen,
+  onClick,
+  onLinkClick,
+}: {
+  item: any;
+  isOpen: boolean;
+  onClick: () => void;
+  onLinkClick: () => void;
+}) => {
   const pathname = usePathname();
   const isParentActive = item.children && pathname.startsWith(item.href);
 
   if (item.children) {
     return (
       <div>
-        <button onClick={onClick} className={`w-full flex items-center justify-between p-3 text-white cursor-pointer transition-colors rounded-full ${isParentActive ? 'bg-red-800' : 'hover:bg-red-700'}`}>
+        <button
+          onClick={onClick}
+          className={`w-full flex items-center justify-between p-3 text-white cursor-pointer transition-colors rounded-full ${
+            isParentActive ? "bg-red-800" : "hover:bg-red-700"
+          }`}
+        >
           <div className="flex items-center">
             <item.icon className="mr-4" size={20} />
             <span>{item.label}</span>
           </div>
-          <ChevronDown className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} size={16} />
+          <ChevronDown
+            className={`transition-transform duration-300 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+            size={16}
+          />
         </button>
-        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-40' : 'max-h-0'}`}>
+        <div
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            isOpen ? "max-h-40" : "max-h-0"
+          }`}
+        >
           <div className="pl-8 pt-2 space-y-1">
             {item.children.map((child: any) => (
               <Link key={child.href} href={child.href} onClick={onLinkClick}>
-                <div className={`block p-2 text-sm rounded-md transition-colors ${pathname === child.href ? 'text-white font-bold' : 'text-red-200 hover:text-white'}`}>
+                <div
+                  className={`block p-2 text-sm rounded-md transition-colors ${
+                    pathname === child.href
+                      ? "text-white font-bold"
+                      : "text-red-200 hover:text-white"
+                  }`}
+                >
                   {child.label}
                 </div>
               </Link>
@@ -84,7 +125,11 @@ const NavItem = ({ item, isOpen, onClick, onLinkClick }: { item: any, isOpen: bo
   const isActive = pathname === item.href;
   return (
     <Link href={item.href} onClick={onLinkClick}>
-      <div className={`flex items-center p-3 text-white cursor-pointer transition-colors rounded-full ${isActive ? 'bg-red-800 text-white font-bold' : 'hover:bg-red-700'}`}>
+      <div
+        className={`flex items-center p-3 text-white cursor-pointer transition-colors rounded-full ${
+          isActive ? "bg-red-800 text-white font-bold" : "hover:bg-red-700"
+        }`}
+      >
         <item.icon className="mr-4" size={20} />
         <span>{item.label}</span>
       </div>
@@ -93,15 +138,23 @@ const NavItem = ({ item, isOpen, onClick, onLinkClick }: { item: any, isOpen: bo
 };
 
 // --- Main Sidebar Component ---
-export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export default function Sidebar({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) {
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
   // This effect ensures the correct submenu is open based on the current URL
   useEffect(() => {
     // Find if the current path belongs to a parent menu with children
-    const parentMenu = navItems.find(item => item.children && pathname.startsWith(item.href));
-    
+    const parentMenu = navItems.find(
+      (item) => item.children && pathname.startsWith(item.href)
+    );
+
     if (parentMenu) {
       // If it does, set that parent menu as open
       setOpenMenu(parentMenu.href);
@@ -117,24 +170,31 @@ export default function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose:
 
   return (
     <>
-      <div 
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity md:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity md:hidden ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
       ></div>
-      <div className={`
+      <div
+        className={`
         fixed inset-y-0 left-0 bg-[#D42A2A] w-64 flex flex-col z-50
         transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-white md:hidden">
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white md:hidden"
+        >
           <X size={24} />
         </button>
         <Logo />
-        
+
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4">
           {navItems.map((item) => (
-            <NavItem 
-              key={item.href} 
+            <NavItem
+              key={item.href}
               item={item}
               isOpen={openMenu === item.href}
               onClick={() => handleMenuClick(item.href)}
