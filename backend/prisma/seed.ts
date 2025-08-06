@@ -8,7 +8,7 @@ async function main() {
 
   // --- Hashing password ---
   const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash('password123', saltRounds);
+  const hashedPassword = await bcrypt.hash('admin@example.com', saltRounds);
 
   // --- Create Permissions ---
   const permissionsData = [
