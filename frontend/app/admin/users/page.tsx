@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { PlusCircle, Trash2, Edit, X, AlertTriangle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 // --- Type Definitions ---
 interface Role {
@@ -165,7 +166,11 @@ export default function AdminUsersPage() {
       <AddUserModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onUserAdded={fetchData} roles={roles} />
       <EditUserModal user={selectedUser} isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onUserUpdated={fetchData} roles={roles} />
       <DeleteConfirmationModal user={selectedUser} isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirmDelete={handleConfirmDelete} />
-      
+      <nav className="mb-4 space-x-4">
+        <Link href="/admin/users" className="text-blue-600 hover:underline">Users</Link>
+        <Link href="/admin/permissions" className="text-blue-600 hover:underline">Permissions</Link>
+      </nav>
+
       <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full min-h-full">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div className="relative w-full md:w-1/3 mb-4 md:mb-0">
