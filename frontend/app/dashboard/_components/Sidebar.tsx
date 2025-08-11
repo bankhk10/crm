@@ -45,9 +45,16 @@ const navItems = [
       { href: "/dashboard/customers/create", label: "สร้างลูกค้าใหม่" },
     ],
   },
-  // { href: "/admin/users", label: "พนักงาน", icon: UserCog },
-  { href: "/dashboard/employee", label: "พนักงาน", icon: UserCog },
-  
+  {
+    href: "/admin",
+    label: "พนักงาน",
+    icon: UserCog,
+    children: [
+      { href: "/admin/users", label: "จัดการพนักงาน" },
+      { href: "/admin/permissions", label: "จัดการ Permission" },
+    ],
+  },
+
 ];
 
 const Logo = () => (
