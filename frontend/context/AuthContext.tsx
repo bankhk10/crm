@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { jwtDecode } from 'jwt-decode';
 import { toast } from 'sonner';
-// Import cookie utility functions from the new centralized file
 import { getCookie, setCookie, deleteCookie } from '@/lib/cookies';
 
 interface User {
@@ -65,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Fetch user profile to update the state
     api.get('/auth/profile').then(response => {
         setUser(response.data);
-        toast.success(`Welcome back, ${response.data.name || response.data.email}!`);
+        toast.success(`เข้าสู่ระบบสำเร็จ`);
         router.push('/dashboard');
     });
   };
@@ -80,7 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     // Redirect to login page
     router.push('/login');
-    toast.info("You have been logged out.");
+    toast.info("คุณได้ออกจากระบบแล้ว.");
   };
 
   return (

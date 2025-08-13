@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import { Prompt } from "next/font/google";
 
 type LoginFormInputs = {
   email: string;
@@ -27,6 +28,11 @@ const Logo = () => (
     </div>
   </div>
 );
+
+const prompt = Prompt({
+  weight: ["400", "500", "700"], // เลือกน้ำหนักฟอนต์
+  subsets: ["thai", "latin"], // ให้รองรับภาษาไทย
+});
 
 // --- Main Login Page Component ---
 export default function LoginPage() {
@@ -77,23 +83,29 @@ export default function LoginPage() {
         <div className="bg-white/80 backdrop-blur-sm p-8 pt-24 rounded-2xl shadow-2xl">
           <Logo />
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-800">
-              ระบบบริหารงานขายและการตลาด
+            <h1 
+                className={`${prompt.className} text-center text-2xl font-bold 
+              bg-gradient-to-r from-red-500 via-gray-800 to-red-500 
+              bg-clip-text text-transparent animate-gradient-x`}
+            >
+                CS Center
             </h1>
             <p className="text-gray-600">
-              Customer Relationship Management (CRM)
+              {/* CS One DataCenter */}
             </p>
           </div>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                E-mail
-              </label>
+            <div className="my-4">
+              <h1
+                className={`${prompt.className} text-center text-xl font-bold text-gray-800 mb-6`}
+              >
+                เข้าสู่ระบบ
+              </h1>
               <input
                 type="email"
-                placeholder="youremail@gmail.com"
+                placeholder="USERNAME"
                 {...register("email", { required: "Email is required" })}
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent transition"
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent transition placeholder:text-sm"
               />
               {errors.email && (
                 <p className="text-red-500 text-sm mt-1">
@@ -102,17 +114,14 @@ export default function LoginPage() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="********"
+                  placeholder="PASSWORD"
                   {...register("password", {
                     required: "Password is required",
                   })}
-                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent transition pr-10"
+                  className="w-full px-4 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-gray-400 focus:border-transparent transition pr-10 placeholder:text-sm"
                 />
                 <button
                   type="button"
@@ -128,8 +137,7 @@ export default function LoginPage() {
                 </p>
               )}
             </div>
-
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
                   id="remember-me"
@@ -138,19 +146,18 @@ export default function LoginPage() {
                 />
                 <label
                   htmlFor="remember-me"
-                  className="ml-2 block text-gray-800"
+                   className={`${prompt.className} ml-2 block text-gray-600`}
                 >
                   บันทึกรหัส
                 </label>
               </div>
               <Link
                 href="#"
-                className="font-medium text-gray-600 hover:text-gray-900"
+                 className={`${prompt.className} text-gray-600 hover:text-gray-900`}
               >
                 ลืมรหัสผ่าน
               </Link>
             </div>
-
             <div className="flex justify-center">
               <button
                 type="submit"
