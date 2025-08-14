@@ -46,6 +46,7 @@ Password: password123
 🛑 การหยุดโปรเจกต์หากต้องการหยุดการทำงานของ Container ทั้งหมด ให้กด Ctrl + C ใน Terminal แล้วรันคำสั่ง:docker-compose down
 
 
-seed
+seed ต้องเข้าไปใน contenner
+
 npx prisma migrate dev --name init
 npx prisma db seed
