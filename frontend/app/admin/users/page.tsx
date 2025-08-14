@@ -168,6 +168,7 @@ export default function AdminUsersPage() {
       <DeleteConfirmationModal user={selectedUser} isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirmDelete={handleConfirmDelete} />
       <nav className="mb-4 space-x-4">
         <Link href="/admin/users" className="text-blue-600 hover:underline">Users</Link>
+        <Link href="/admin/roles" className="text-blue-600 hover:underline">Roles</Link>
         <Link href="/admin/permissions" className="text-blue-600 hover:underline">Permissions</Link>
       </nav>
 
