@@ -80,8 +80,16 @@ export default function CreateEmployeePage() {
   const filteredTambons = tambons.filter(t => t.amphure_id === amphureId);
 
   const onSubmit: SubmitHandler<CreateEmployeeFormInputs> = async (data) => {
+    const payload = {
+      ...data,
+      email: data.email.trim(),
+      age: data.age ? Number(data.age) : undefined,
+      birthDate: data.birthDate ? new Date(data.birthDate).toISOString() : undefined,
+      startDate: data.startDate ? new Date(data.startDate).toISOString() : undefined,
+      endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
+    };
     try {
-      await api.post('/employees', data);
+      await api.post('/employees', payload);
       toast.success('บันทึกพนักงานสำเร็จ');
       router.push('/dashboard/employee');
     } catch (error: any) {
@@ -133,12 +141,11 @@ export default function CreateEmployeePage() {
             <div><label className="block text-sm font-medium text-gray-700">คำนำหน้า *</label><select {...register('prefix', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"><option value="">กรุณาเลือก</option><option>นาย</option><option>นาง</option><option>นางสาว</option></select></div>
             <div><label className="block text-sm font-medium text-gray-700">ชื่อ *</label><input {...register('firstName', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
             <div><label className="block text-sm font-medium text-gray-700">นามสกุล *</label><input {...register('lastName', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-            {/* <div className="relative"><label className="block text-sm font-medium text-gray-700">วันเกิด *</label><input type="date" {...register('birthDate', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /><CalendarIcon className="absolute right-3 top-9 text-gray-400" size={20} /></div> */}
-            <div><label className="block text-sm font-medium text-gray-700">วันเกิด</label><input type="date" {...register('startDate')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div className="relative"><label className="block text-sm font-medium text-gray-700">วันเกิด *</label><input type="date" {...register('birthDate', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /><CalendarIcon className="absolute right-3 top-9 text-gray-400" size={20} /></div>
             <div><label className="block text-sm font-medium text-gray-700">อายุ</label><input {...register('age')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
             <div><label className="block text-sm font-medium text-gray-700">เพศ</label><select {...register('gender')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"><option value="">กรุณาเลือก</option><option>ชาย</option><option>หญิง</option></select></div>
             <div><label className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label><input {...register('phone')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
-            <div><label className="block text-sm font-medium text-gray-700">อีเมล</label><input type="email" {...register('email')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">อีเมล *</label><input type="email" {...register('email', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
             <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700">ที่อยู่</label><input {...register('address')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
             <div><label className="block text-sm font-medium text-gray-700">จังหวัด</label>
               <select value={provinceId ?? ''} onChange={handleProvinceChange} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">

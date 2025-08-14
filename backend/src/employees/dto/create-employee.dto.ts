@@ -35,9 +35,8 @@ export class CreateEmployeeDto {
   email?: string;
 
   @IsOptional()
-  @Type(() => Date)
   @IsDateString()
-  birthDate?: Date;
+  birthDate?: string;
 
   @IsOptional()
   @IsString()
@@ -68,14 +67,12 @@ export class CreateEmployeeDto {
   department?: string;
 
   @IsOptional()
-  @Type(() => Date)
   @IsDateString()
-  startDate?: Date;
+  startDate?: string;
 
   @IsOptional()
-  @Type(() => Date)
   @IsDateString()
-  endDate?: Date;
+  endDate?: string;
 
   @IsOptional()
   @IsString()
