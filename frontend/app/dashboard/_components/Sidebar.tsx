@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 import {
   BarChart2,
   Activity,
@@ -13,6 +14,7 @@ import {
   Megaphone,
   Users,
   UserCog,
+  Shield,
   X,
   ChevronDown,
 } from "lucide-react";
@@ -46,7 +48,8 @@ const navItems = [
     ],
   },
   { href: "/dashboard/employee", label: "พนักงาน", icon: UserCog },
-  
+  { href: "/admin/permissions", label: "สิทธิ์", icon: Shield },
+
 ];
 
 const Logo = () => (
@@ -148,6 +151,14 @@ export default function Sidebar({
 }) {
   const pathname = usePathname();
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.href.startsWith("/admin")) {
+      return user?.role.name === "ADMIN";
+    }
+    return true;
+  });
 
   // This effect ensures the correct submenu is open based on the current URL
   useEffect(() => {
@@ -193,7 +204,7 @@ export default function Sidebar({
         <Logo />
 
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <NavItem
               key={item.href}
               item={item}
