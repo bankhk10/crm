@@ -13,6 +13,7 @@ import {
   Megaphone,
   Users,
   UserCog,
+  Shield,
   X,
   ChevronDown,
 } from "lucide-react";
@@ -46,7 +47,8 @@ const navItems = [
     ],
   },
   { href: "/dashboard/employee", label: "พนักงาน", icon: UserCog },
-  
+  { href: "/admin/permissions", label: "สิทธิ์", icon: Shield },
+
 ];
 
 const Logo = () => (
