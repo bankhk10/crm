@@ -59,6 +59,9 @@ services:
       - ./frontend:/app
       - /app/node_modules
     command: npm run dev
+    environment:
+      - CHOKIDAR_USEPOLLING=1
+      - WATCHPACK_POLLING=true
     depends_on:
       - backend
     networks:
