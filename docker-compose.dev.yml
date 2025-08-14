@@ -38,6 +38,7 @@ services:
     command: sh -c "npx prisma generate && npm run start:dev"
     environment:
       DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
+      SHADOW_DATABASE_URL: "mysql://root:${DB_ROOT_PASSWORD}@db:3306/prisma_shadow"
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
     # --- UPDATED depends_on ---
