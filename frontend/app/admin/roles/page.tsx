@@ -21,7 +21,10 @@ interface Role {
   permissions: Permission[];
 }
 
+// Values submitted to the API
 type RoleFormInputs = { name: string; permissionIds: number[] };
+// Values used within the form (checkbox values are strings)
+type RoleFormData = { name: string; permissionIds: string[] };
 
 const RoleModal = ({
   isOpen,
@@ -36,7 +39,7 @@ const RoleModal = ({
   onClose: () => void;
   onSubmit: (data: RoleFormInputs) => Promise<void>;
   permissions: Permission[];
-  defaultValues?: RoleFormInputs;
+  defaultValues?: RoleFormData;
   title: string;
   submitLabel: string;
 }) => {
@@ -45,7 +48,7 @@ const RoleModal = ({
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<RoleFormInputs>({ defaultValues });
+  } = useForm<RoleFormData>({ defaultValues });
 
   useEffect(() => {
     reset(defaultValues);
@@ -53,12 +56,15 @@ const RoleModal = ({
 
   if (!isOpen) return null;
 
-  const handleFormSubmit: SubmitHandler<RoleFormInputs> = async (data) => {
+  const handleFormSubmit: SubmitHandler<RoleFormData> = async (data) => {
+    const ids = Array.isArray(data.permissionIds)
+      ? data.permissionIds
+      : [data.permissionIds];
     await onSubmit({
       name: data.name,
-      permissionIds: data.permissionIds.map(Number),
+      permissionIds: ids.map(Number),
     });
-    reset();
+    reset({ name: '', permissionIds: [] });
   };
 
   return (
@@ -84,8 +90,10 @@ const RoleModal = ({
                 <label key={p.id} className="flex items-center space-x-2 mb-1">
                   <input
                     type="checkbox"
-                    value={p.id}
-                    {...register('permissionIds', { required: 'Select at least one permission' })}
+                    value={String(p.id)}
+                    {...register('permissionIds', {
+                      required: 'Select at least one permission',
+                    })}
                   />
                   <span>{p.action} {p.subject}</span>
                 </label>
@@ -258,7 +266,10 @@ export default function AdminRolesPage() {
         permissions={permissions}
         defaultValues={
           modalMode === 'edit' && selectedRole
-            ? { name: selectedRole.name, permissionIds: selectedRole.permissions.map((p) => p.id) }
+            ? {
+                name: selectedRole.name,
+                permissionIds: selectedRole.permissions.map((p) => String(p.id)),
+              }
             : { name: '', permissionIds: [] }
         }
         title={modalMode === 'add' ? 'Add Role' : 'Edit Role'}
