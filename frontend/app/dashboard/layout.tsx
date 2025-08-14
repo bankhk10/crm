@@ -23,7 +23,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     // 1. เปลี่ยนพื้นหลังหลักของทั้งหน้าเป็นสีแดง
-    <div className="flex h-screen bg-[#D42A2A]">
+    <div className="flex h-screen bg-[#b92626]">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col overflow-hidden">

@@ -53,7 +53,7 @@ const navItems = [
 ];
 
 const Logo = () => (
-  <div className="bg-red-650 p-4 flex items-center justify-center mb-8">
+  <div className="bg-red-650 p-4 flex items-center justify-center mb-6 mr-5 mt-4">
     <div className="relative w-36 h-36 rounded-lg overflow-hidden p-2">
       <Image
         src="/images/logo.jpg" 
@@ -174,7 +174,7 @@ export default function Sidebar({
       // If the current path is not part of any submenu, close all submenus
       setOpenMenu(null);
     }
-  }, [pathname]); // This effect re-runs every time the URL changes
+  }, [pathname]);
 
   const handleMenuClick = (href: string) => {
     setOpenMenu(openMenu === href ? null : href);
@@ -190,7 +190,7 @@ export default function Sidebar({
       ></div>
       <div
         className={`
-        fixed inset-y-0 left-0 bg-[#D42A2A] w-64 flex flex-col z-50
+        fixed inset-y-0 left-0 bg-[#b92626] w-64 flex flex-col z-50
         transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0
         ${isOpen ? "translate-x-0" : "-translate-x-full"}
       `}

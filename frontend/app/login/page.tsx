@@ -57,7 +57,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center bg-[#f3f6f8] overflow-hidden">
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-gray-500 overflow-hidden">
       {/* === Red Top-Right Blob === */}
       <svg
         className="absolute top-0 right-0 w-full h-full z-0"
@@ -67,20 +67,20 @@ export default function LoginPage() {
       >
         <path
           d="M250,0 C300,100 600,100 700,200 C800,300 450,500 800,600 L800,0 Z"
-          fill="#D42A2A"
+          fill="#b92626"
         />
       </svg>
 
       {/* === Concentric Circles Bottom Left === */}
-      <div className="absolute bottom-[-180px] left-[-180px] w-[500px] h-[500px] rounded-full bg-[#D42A2A] flex items-center justify-center">
+      <div className="absolute bottom-[-180px] left-[-180px] w-[500px] h-[500px] rounded-full bg-[#b92626] flex items-center justify-center">
         <div className="w-[400px] h-[400px] rounded-full bg-white flex items-center justify-center">
-          <div className="w-[300px] h-[300px] rounded-full bg-gray-400"></div>
+          <div className="w-[300px] h-[300px] rounded-full bg-gray-500"></div>
         </div>
       </div>
 
       {/* === Login Form === */}
       <div className="relative z-10 w-full max-w-lg px-4">
-        <div className="bg-white/80 backdrop-blur-sm p-8 pt-24 rounded-2xl shadow-2xl">
+        <div className="bg-white/100 backdrop-blur-sm p-8 pt-24 rounded-2xl shadow-2xl">
           <Logo />
           <div className="text-center mb-8">
             <h1 
