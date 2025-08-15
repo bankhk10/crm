@@ -100,21 +100,26 @@ const UserCard = ({ user, onDelete }: { user: User; onDelete: () => void }) => {
         </button>
       </div>
       <div className="relative w-24 h-24 rounded-full overflow-hidden mb-4 -mt-4">
-        <Image src="/images/man-avatar.png" alt={user.name} layout="fill" className="object-cover" />
+        <Image
+          src="/images/man-avatar.png"
+          alt={user.name}
+          layout="fill"
+          className="object-cover"
+        />
       </div>
       <h3 className="font-bold text-lg text-gray-800">{user.name}</h3>
       <p className="text-sm text-gray-500 mb-4">
         {user.role.name === "USER" ? "เซลล์" : user.role.name}
       </p>
-      <div className="flex space-x-2 mb-6">
+      <div className="flex space-x-4 mb-6">
         <Link href={`/dashboard/employee/${user.id}/edit`}>
-          <div className="bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-300 cursor-pointer">
+          <div className="bg-gray-200 text-gray-700 text-sm font-semibold px-5 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-300 cursor-pointer shadow-sm">
             แก้ไข
           </div>
         </Link>
         <Link href={`/dashboard/employee/${user.id}`}>
-          <div className="bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-300 cursor-pointer">
-            รายละเอียด
+          <div className="bg-gray-200 text-gray-700 text-sm font-semibold px-5 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-300 cursor-pointer shadow-sm">
+            ประวัติ
           </div>
         </Link>
       </div>
@@ -201,27 +206,29 @@ export default function EmployeePage() {
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirmDelete={handleConfirmDelete}
       />
-
       <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full min-h-full">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <div className="relative w-full md:w-1/3 mb-4 md:mb-0">
+        <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-3 md:gap-4 mb-8">
+          {/* Search */}
+          <div className="relative w-full md:max-w-md">
             <input
               type="text"
               placeholder="ค้นหา"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="ค้นหาพนักงาน"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
             />
             <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
               size={20}
             />
           </div>
 
-          <Link href="/dashboard/employee/create">
-            <div className="w-full md:w-auto flex items-center justify-center bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 font-semibold cursor-pointer">
-              <PlusCircle className="w-5 h-5 mr-2" />
-              เพิ่มพนักงาน
+          {/* Add Button */}
+          <Link href="/dashboard/employee/create" className="w-full md:w-auto">
+            <div className="w-full md:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 active:scale-[0.99] transition">
+              <PlusCircle className="w-5 h-5" />
+              <span className="font-semibold">เพิ่มพนักงาน</span>
             </div>
           </Link>
         </div>
