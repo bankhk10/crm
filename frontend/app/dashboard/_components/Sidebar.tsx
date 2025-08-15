@@ -52,6 +52,16 @@ const navItems = [
 
 ];
 
+// Restrict menu visibility based on role
+const roleMenuRestrictions: Record<string, string[]> = {
+  MARKETING_MANAGER: ["/dashboard/sales"],
+  MARKETING_HEAD: ["/dashboard", "/dashboard/sales"],
+  MARKETING_EMPLOYEE: ["/dashboard", "/dashboard/sales"],
+  SALES_MANAGER: ["/dashboard/marketing"],
+  SALES_HEAD: ["/dashboard", "/dashboard/marketing"],
+  SALES_EMPLOYEE: ["/dashboard", "/dashboard/marketing"],
+};
+
 const Logo = () => (
   <div className="bg-red-650 p-4 flex items-center justify-center mb-6 mr-5 mt-4">
     <div className="relative w-36 h-36 rounded-lg overflow-hidden p-2">
@@ -154,10 +164,15 @@ export default function Sidebar({
   const { user } = useAuth();
 
   const filteredNavItems = navItems.filter((item) => {
+    const roleName = user?.role.name;
+
     if (item.href.startsWith("/admin")) {
-      return user?.role.name === "ADMIN";
+      return roleName === "ADMIN" || roleName === "CEO";
     }
-    return true;
+
+    const restricted =
+      roleMenuRestrictions[roleName as keyof typeof roleMenuRestrictions] || [];
+    return !restricted.includes(item.href);
   });
 
   // This effect ensures the correct submenu is open based on the current URL

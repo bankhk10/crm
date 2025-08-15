@@ -8,17 +8,25 @@ async function main() {
   console.log('🌱 Seeding database...');
 
   // --- Create Permissions ---
-  const permissions = [
-    { action: 'create', subject: 'user' },
-    { action: 'read', subject: 'user' },
-    { action: 'update', subject: 'user' },
-    { action: 'delete', subject: 'user' },
-  ];
+  const actions = ['create', 'read', 'update', 'delete'];
+  const subjects = ['user', 'marketing', 'sales'];
+  const permissions = subjects.flatMap((subject) =>
+    actions.map((action) => ({ action, subject }))
+  );
 
   await prisma.permission.createMany({
     data: permissions,
     skipDuplicates: true,
   });
+
+  const connectAllPermissions = permissions.map((p) => ({
+    action_subject: { action: p.action, subject: p.subject },
+  }));
+
+  const connectSubjectPermissions = (subject: string, allowDelete: boolean) =>
+    actions
+      .filter((a) => allowDelete || a !== 'delete')
+      .map((action) => ({ action_subject: { action, subject } }));
 
   // --- Create Roles ---
   const adminRole = await prisma.role.upsert({
@@ -26,19 +34,76 @@ async function main() {
     update: {},
     create: {
       name: 'ADMIN',
-      permissions: {
-        connect: permissions.map((p) => ({
-          action_subject: { action: p.action, subject: p.subject },
-        })),
-      },
+      permissions: { connect: connectAllPermissions },
     },
   });
 
   const userRole = await prisma.role.upsert({
     where: { name: 'USER' },
     update: {},
+    create: { name: 'USER' },
+  });
+
+  const ceoRole = await prisma.role.upsert({
+    where: { name: 'CEO' },
+    update: {},
     create: {
-      name: 'USER',
+      name: 'CEO',
+      permissions: { connect: connectAllPermissions },
+    },
+  });
+
+  const marketingManagerRole = await prisma.role.upsert({
+    where: { name: 'MARKETING_MANAGER' },
+    update: {},
+    create: {
+      name: 'MARKETING_MANAGER',
+      permissions: { connect: connectSubjectPermissions('marketing', true) },
+    },
+  });
+
+  const marketingHeadRole = await prisma.role.upsert({
+    where: { name: 'MARKETING_HEAD' },
+    update: {},
+    create: {
+      name: 'MARKETING_HEAD',
+      permissions: { connect: connectSubjectPermissions('marketing', true) },
+    },
+  });
+
+  const marketingEmployeeRole = await prisma.role.upsert({
+    where: { name: 'MARKETING_EMPLOYEE' },
+    update: {},
+    create: {
+      name: 'MARKETING_EMPLOYEE',
+      permissions: { connect: connectSubjectPermissions('marketing', false) },
+    },
+  });
+
+  const salesManagerRole = await prisma.role.upsert({
+    where: { name: 'SALES_MANAGER' },
+    update: {},
+    create: {
+      name: 'SALES_MANAGER',
+      permissions: { connect: connectSubjectPermissions('sales', true) },
+    },
+  });
+
+  const salesHeadRole = await prisma.role.upsert({
+    where: { name: 'SALES_HEAD' },
+    update: {},
+    create: {
+      name: 'SALES_HEAD',
+      permissions: { connect: connectSubjectPermissions('sales', true) },
+    },
+  });
+
+  const salesEmployeeRole = await prisma.role.upsert({
+    where: { name: 'SALES_EMPLOYEE' },
+    update: {},
+    create: {
+      name: 'SALES_EMPLOYEE',
+      permissions: { connect: connectSubjectPermissions('sales', false) },
     },
   });
 
@@ -94,6 +159,54 @@ async function main() {
       status: 'Active',
       company: 'My Company',
       roleId: userRole.id,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'marketing.head@example.com' },
+    update: {},
+    create: {
+      employeeId: 'EMP003',
+      email: 'marketing.head@example.com',
+      password: passwordHash,
+      name: 'Marketing Head',
+      roleId: marketingHeadRole.id,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'marketing.employee@example.com' },
+    update: {},
+    create: {
+      employeeId: 'EMP004',
+      email: 'marketing.employee@example.com',
+      password: passwordHash,
+      name: 'Marketing Employee',
+      roleId: marketingEmployeeRole.id,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'sales.head@example.com' },
+    update: {},
+    create: {
+      employeeId: 'EMP005',
+      email: 'sales.head@example.com',
+      password: passwordHash,
+      name: 'Sales Head',
+      roleId: salesHeadRole.id,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'sales.employee@example.com' },
+    update: {},
+    create: {
+      employeeId: 'EMP006',
+      email: 'sales.employee@example.com',
+      password: passwordHash,
+      name: 'Sales Employee',
+      roleId: salesEmployeeRole.id,
     },
   });
 
