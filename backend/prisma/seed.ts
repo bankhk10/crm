@@ -43,7 +43,7 @@ async function main() {
   });
 
   // --- Create Users ---
-  const passwordHash = await bcrypt.hash('password123', 10);
+  const passwordHash = await bcrypt.hash('admin@example.com', 10);
 
   await prisma.user.upsert({
     where: { email: 'admin@example.com' },
