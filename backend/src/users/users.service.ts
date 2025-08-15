@@ -31,7 +31,9 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
       include: {
-        role: true, // Include role details
+        role: {
+          include: { permissions: true },
+        },
       },
     });
     if (!user) {
