@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'CRM System',
-  description: 'Full-stack CRM with Next.js and NestJS',
+  description: 'CS CRM System',
 };
 
 export default function RootLayout({
