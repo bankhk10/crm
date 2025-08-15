@@ -178,6 +178,7 @@ const UserCard = ({ user, onEdit, onDelete }: { user: User; onEdit: () => void; 
             <p className="text-sm text-gray-500 mb-4">{user.role.name === 'USER' ? 'เซลล์' : user.role.name}</p>
             <div className="flex space-x-2 mb-6">
                 <button onClick={onEdit} className="bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-300">แก้ไข</button>
+                <Link href={`/admin/users/${user.id}/permissions`} className="bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-300">สิทธิ์</Link>
                 <button className="bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-300">รายละเอียด</button>
             </div>
             <div className="w-full flex justify-around border-t border-gray-200 pt-4">
