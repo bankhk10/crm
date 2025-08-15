@@ -141,6 +141,54 @@ async function main() {
     });
   }
 
+  await prisma.user.upsert({
+    where: { email: 'marketing.head@example.com' },
+    update: {},
+    create: {
+      employeeId: 'EMP003',
+      email: 'marketing.head@example.com',
+      password: passwordHash,
+      name: 'Marketing Head',
+      roleId: marketingHeadRole.id,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'marketing.employee@example.com' },
+    update: {},
+    create: {
+      employeeId: 'EMP004',
+      email: 'marketing.employee@example.com',
+      password: passwordHash,
+      name: 'Marketing Employee',
+      roleId: marketingEmployeeRole.id,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'sales.head@example.com' },
+    update: {},
+    create: {
+      employeeId: 'EMP005',
+      email: 'sales.head@example.com',
+      password: passwordHash,
+      name: 'Sales Head',
+      roleId: salesHeadRole.id,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'sales.employee@example.com' },
+    update: {},
+    create: {
+      employeeId: 'EMP006',
+      email: 'sales.employee@example.com',
+      password: passwordHash,
+      name: 'Sales Employee',
+      roleId: salesEmployeeRole.id,
+    },
+  });
+
   console.log('✅ Seeding finished!');
 }
 
