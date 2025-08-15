@@ -107,6 +107,60 @@ async function main() {
     },
   });
 
+  const marketingManagerRole = await prisma.role.upsert({
+    where: { name: 'MARKETING_MANAGER' },
+    update: {},
+    create: {
+      name: 'MARKETING_MANAGER',
+      permissions: { connect: connectSubjectPermissions('marketing', true) },
+    },
+  });
+
+  const marketingHeadRole = await prisma.role.upsert({
+    where: { name: 'MARKETING_HEAD' },
+    update: {},
+    create: {
+      name: 'MARKETING_HEAD',
+      permissions: { connect: connectSubjectPermissions('marketing', true) },
+    },
+  });
+
+  const marketingEmployeeRole = await prisma.role.upsert({
+    where: { name: 'MARKETING_EMPLOYEE' },
+    update: {},
+    create: {
+      name: 'MARKETING_EMPLOYEE',
+      permissions: { connect: connectSubjectPermissions('marketing', false) },
+    },
+  });
+
+  const salesManagerRole = await prisma.role.upsert({
+    where: { name: 'SALES_MANAGER' },
+    update: {},
+    create: {
+      name: 'SALES_MANAGER',
+      permissions: { connect: connectSubjectPermissions('sales', true) },
+    },
+  });
+
+  const salesHeadRole = await prisma.role.upsert({
+    where: { name: 'SALES_HEAD' },
+    update: {},
+    create: {
+      name: 'SALES_HEAD',
+      permissions: { connect: connectSubjectPermissions('sales', true) },
+    },
+  });
+
+  const salesEmployeeRole = await prisma.role.upsert({
+    where: { name: 'SALES_EMPLOYEE' },
+    update: {},
+    create: {
+      name: 'SALES_EMPLOYEE',
+      permissions: { connect: connectSubjectPermissions('sales', false) },
+    },
+  });
+
   const marketingEmployeeRole = await prisma.role.upsert({
     where: { name: 'MARKETING_EMPLOYEE' },
     update: {},
