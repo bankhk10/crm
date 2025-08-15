@@ -1,67 +1,35 @@
+// prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Start seeding ...');
-
-  // --- Hashing password ---
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash('admin@example.com', saltRounds);
+  console.log('🌱 Seeding database...');
 
   // --- Create Permissions ---
-  const permissionsData = [
-    // User Permissions
-    { action: 'create', subject: 'User' },
-    { action: 'read', subject: 'User' },
-    { action: 'update', subject: 'User' },
-    { action: 'delete', subject: 'User' },
-    // Role Permissions
-    { action: 'create', subject: 'Role' },
-    { action: 'read', subject: 'Role' },
-    { action: 'update', subject: 'Role' },
-    { action: 'delete', subject: 'Role' },
-    // Permission Permissions
-    { action: 'read', subject: 'Permission' },
+  const permissions = [
+    { action: 'create', subject: 'user' },
+    { action: 'read', subject: 'user' },
+    { action: 'update', subject: 'user' },
+    { action: 'delete', subject: 'user' },
   ];
 
-  for (const p of permissionsData) {
-    await prisma.permission.upsert({
-      where: { action_subject: { action: p.action, subject: p.subject } },
-      update: {},
-      create: p,
-    });
-  }
-  console.log('Permissions created.');
+  await prisma.permission.createMany({
+    data: permissions,
+    skipDuplicates: true,
+  });
 
-  const allPermissions = await prisma.permission.findMany();
-
-  // --- Create Roles and Assign Permissions ---
+  // --- Create Roles ---
   const adminRole = await prisma.role.upsert({
     where: { name: 'ADMIN' },
     update: {},
     create: {
       name: 'ADMIN',
       permissions: {
-        connect: allPermissions.map((p) => ({ id: p.id })),
-      },
-    },
-  });
-
-  const managerRole = await prisma.role.upsert({
-    where: { name: 'MANAGER' },
-    update: {},
-    create: {
-      name: 'MANAGER',
-      permissions: {
-        connect: allPermissions
-          .filter(
-            (p) =>
-              p.subject === 'User' &&
-              (p.action === 'read' || p.action === 'create'),
-          )
-          .map((p) => ({ id: p.id })),
+        connect: permissions.map((p) => ({
+          action_subject: { action: p.action, subject: p.subject },
+        })),
       },
     },
   });
@@ -71,35 +39,35 @@ async function main() {
     update: {},
     create: {
       name: 'USER',
-      permissions: {
-        connect: allPermissions
-          .filter((p) => p.subject === 'User' && p.action === 'read')
-          .map((p) => ({ id: p.id })),
-      },
     },
   });
-  console.log('Roles created.');
 
   // --- Create Users ---
+  const passwordHash = await bcrypt.hash('password123', 10);
+
   await prisma.user.upsert({
     where: { email: 'admin@example.com' },
     update: {},
     create: {
+      employeeId: 'EMP001',
       email: 'admin@example.com',
-      name: 'Admin User',
-      password: hashedPassword,
+      password: passwordHash,
+      prefix: 'Mr.',
+      firstName: 'Admin',
+      lastName: 'System',
+      age: 30,
+      gender: 'Male',
+      phone: '0800000000',
+      birthDate: new Date('1994-01-01'),
+      address: '123 Main St',
+      province: 'Bangkok',
+      postalCode: '10000',
+      position: 'Administrator',
+      department: 'IT',
+      startDate: new Date(),
+      status: 'Active',
+      company: 'My Company',
       roleId: adminRole.id,
-    },
-  });
-
-  await prisma.user.upsert({
-    where: { email: 'manager@example.com' },
-    update: {},
-    create: {
-      email: 'manager@example.com',
-      name: 'Manager User',
-      password: hashedPassword,
-      roleId: managerRole.id,
     },
   });
 
@@ -107,15 +75,29 @@ async function main() {
     where: { email: 'user@example.com' },
     update: {},
     create: {
+      employeeId: 'EMP002',
       email: 'user@example.com',
-      name: 'Regular User',
-      password: hashedPassword,
+      password: passwordHash,
+      prefix: 'Ms.',
+      firstName: 'Normal',
+      lastName: 'User',
+      age: 25,
+      gender: 'Female',
+      phone: '0811111111',
+      birthDate: new Date('1999-05-05'),
+      address: '456 Main St',
+      province: 'Chiang Mai',
+      postalCode: '50000',
+      position: 'Staff',
+      department: 'Sales',
+      startDate: new Date(),
+      status: 'Active',
+      company: 'My Company',
       roleId: userRole.id,
     },
   });
-  console.log('Users created.');
 
-  console.log('Seeding finished.');
+  console.log('✅ Seeding finished!');
 }
 
 main()
