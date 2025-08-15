@@ -34,6 +34,7 @@ type CreateEmployeeFormInputs = {
   gender: string;
   phone: string;
   email: string;
+  password: string;
   birthDate: string;
   address: string;
   subdistrict: string;
@@ -47,6 +48,7 @@ type CreateEmployeeFormInputs = {
   managerId: string;
   status: string;
   company: string;
+  responsibleArea: string;
 };
 
 export default function CreateEmployeePage() {
@@ -146,6 +148,7 @@ export default function CreateEmployeePage() {
             <div><label className="block text-sm font-medium text-gray-700">เพศ</label><select {...register('gender')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"><option value="">กรุณาเลือก</option><option>ชาย</option><option>หญิง</option></select></div>
             <div><label className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label><input {...register('phone')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
             <div><label className="block text-sm font-medium text-gray-700">อีเมล *</label><input type="email" {...register('email', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">รหัสผ่าน *</label><input type="password" {...register('password', { required: true, minLength: 6 })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
             <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700">ที่อยู่</label><input {...register('address')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
             <div><label className="block text-sm font-medium text-gray-700">จังหวัด</label>
               <select value={provinceId ?? ''} onChange={handleProvinceChange} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
@@ -179,6 +182,7 @@ export default function CreateEmployeePage() {
             <div><label className="block text-sm font-medium text-gray-700">รหัสหัวหน้าพนักงาน</label><input {...register('managerId')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
             <div><label className="block text-sm font-medium text-gray-700">สถานะพนักงาน</label><select {...register('status')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"><option value="">กรุณาเลือก</option><option>Active</option><option>Inactive</option></select></div>
             <div><label className="block text-sm font-medium text-gray-700">บริษัท</label><input {...register('company')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">เขตรับผิดชอบ</label><input {...register('responsibleArea')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
           </div>
         </div>
 
