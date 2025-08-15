@@ -38,6 +38,11 @@ export class CreateEmployeeDto {
   password: string;
 
   @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  roleId?: number;
+
+  @IsOptional()
   @IsDateString()
   birthDate?: string;
 

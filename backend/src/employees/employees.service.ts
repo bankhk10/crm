@@ -9,15 +9,22 @@ export class EmployeesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createEmployeeDto: CreateEmployeeDto) {
-    const { password, ...data } = createEmployeeDto;
+    const { password, roleId, firstName, lastName, ...data } = createEmployeeDto;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const userRole = await this.prisma.role.findUnique({ where: { name: 'USER' } });
-    if (!userRole) throw new Error('Default USER role not found');
+    let finalRoleId = roleId;
+    if (!finalRoleId) {
+      const userRole = await this.prisma.role.findUnique({ where: { name: 'USER' } });
+      if (!userRole) throw new Error('Default USER role not found');
+      finalRoleId = userRole.id;
+    }
     const user = await this.prisma.user.create({
       data: {
         ...data,
+        firstName,
+        lastName,
+        name: [firstName, lastName].filter(Boolean).join(' ') || undefined,
         password: hashedPassword,
-        roleId: userRole.id,
+        roleId: finalRoleId,
       },
     });
     const { password: _pwd, ...result } = user;
@@ -37,9 +44,22 @@ export class EmployeesService {
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
-    const data: any = { ...updateEmployeeDto };
-    if (updateEmployeeDto.password) {
-      data.password = await bcrypt.hash(updateEmployeeDto.password, 10);
+    const { password, firstName, lastName, ...rest } = updateEmployeeDto;
+    const data: any = { ...rest };
+    if (password) {
+      data.password = await bcrypt.hash(password, 10);
+    }
+    if (firstName !== undefined) {
+      data.firstName = firstName;
+    }
+    if (lastName !== undefined) {
+      data.lastName = lastName;
+    }
+    if (firstName !== undefined || lastName !== undefined) {
+      const existing = await this.prisma.user.findUnique({ where: { employeeId: id } });
+      const newFirst = firstName ?? existing?.firstName ?? '';
+      const newLast = lastName ?? existing?.lastName ?? '';
+      data.name = `${newFirst} ${newLast}`.trim();
     }
     return this.prisma.user.update({ where: { employeeId: id }, data });
   }
