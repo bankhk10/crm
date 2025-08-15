@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsInt, IsEmail, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsInt, IsEmail, IsDateString, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateEmployeeDto {
@@ -30,9 +30,17 @@ export class CreateEmployeeDto {
   @IsString()
   phone?: string;
 
-  @IsOptional()
   @IsEmail()
-  email?: string;
+  email: string;
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  roleId?: number;
 
   @IsOptional()
   @IsDateString()
@@ -85,4 +93,8 @@ export class CreateEmployeeDto {
   @IsOptional()
   @IsString()
   company?: string;
+
+  @IsOptional()
+  @IsString()
+  responsibleArea?: string;
 }

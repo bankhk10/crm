@@ -32,6 +32,7 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const isMatch = await bcrypt.compare(loginDto.password, user.password);
     if (!isMatch) throw new UnauthorizedException('Invalid credentials');
+    if (user.status && user.status.toLowerCase() === 'inactive') throw new UnauthorizedException('User inactive');
     return this.generateTokens(user.id, user.email, user.role.name);
   }
 
