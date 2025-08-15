@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useRef,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { jwtDecode } from 'jwt-decode';
@@ -28,6 +35,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const tokenTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isHandlingRef = useRef(false);
+
+  const handleTokenExpired = () => {
+    if (isHandlingRef.current) return;
+    isHandlingRef.current = true;
+    toast.error('เซสชั่นหมดอายุแล้ว กรุณาเข้าสู่ระบบอีกครั้ง.');
+    deleteCookie('accessToken');
+    deleteCookie('refreshToken');
+    delete api.defaults.headers.Authorization;
+    setUser(null);
+    setTimeout(() => {
+      router.push('/login');
+      isHandlingRef.current = false;
+    }, 3000);
+  };
+
+  const startTokenTimer = (token: string) => {
+    const decoded = jwtDecode<{ exp: number }>(token);
+    const expiresInMs = decoded.exp * 1000 - Date.now();
+    if (tokenTimeoutRef.current) clearTimeout(tokenTimeoutRef.current);
+    if (expiresInMs > 0) {
+      tokenTimeoutRef.current = setTimeout(handleTokenExpired, expiresInMs);
+    }
+  };
 
   // This effect runs once on mount to check for an existing session
   useEffect(() => {
@@ -39,18 +71,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           api.defaults.headers.Authorization = `Bearer ${accessToken}`;
           const profile = await api.get('/auth/profile');
           setUser(profile.data);
+          startTokenTimer(accessToken);
         } catch (error) {
           console.error('Failed to fetch profile, session might be expired.', error);
-          // If fetching profile fails, clear cookies and state
-          logout();
+          handleTokenExpired();
         }
       }
       setIsLoading(false);
     };
     initializeAuth();
     // The empty dependency array ensures this runs only once.
-    // Eslint might complain about 'logout' not being in the array, but adding it
-    // can cause re-renders. The function is stable.
+  }, []);
+
+  useEffect(() => {
+    const interceptor = api.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response?.status === 401) {
+          handleTokenExpired();
+        }
+        return Promise.reject(error);
+      },
+    );
+    return () => {
+      api.interceptors.response.eject(interceptor);
+    };
   }, []);
 
   const login = (accessToken: string, refreshToken: string) => {
@@ -60,16 +105,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Set auth header for subsequent requests
     api.defaults.headers.Authorization = `Bearer ${accessToken}`;
-    
+
+    startTokenTimer(accessToken);
+
     // Fetch user profile to update the state
     api.get('/auth/profile').then(response => {
-        setUser(response.data);
-        toast.success(`เข้าสู่ระบบสำเร็จ`);
-        router.push('/dashboard');
+      setUser(response.data);
+      toast.success(`เข้าสู่ระบบสำเร็จ`);
+      router.push('/dashboard');
     });
   };
 
   const logout = () => {
+    if (tokenTimeoutRef.current) {
+      clearTimeout(tokenTimeoutRef.current);
+    }
     // Clear cookies
     deleteCookie('accessToken');
     deleteCookie('refreshToken');
@@ -79,7 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     // Redirect to login page
     router.push('/login');
-    toast.info("คุณได้ออกจากระบบแล้ว.");
+    toast.info('คุณได้ออกจากระบบแล้ว.');
   };
 
   return (
