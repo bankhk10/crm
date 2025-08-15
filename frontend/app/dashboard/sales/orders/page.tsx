@@ -6,7 +6,7 @@ export default function SalesOrdersPage() {
   const { user } = useAuth();
 
   const hasPermission = (action: string) =>
-    user?.role.permissions.some(
+    user?.role?.permissions?.some(
       (p: any) => p.action === action && p.subject === "sales"
     );
 

@@ -107,6 +107,24 @@ async function main() {
     },
   });
 
+  const salesHeadRole = await prisma.role.upsert({
+    where: { name: 'SALES_HEAD' },
+    update: {},
+    create: {
+      name: 'SALES_HEAD',
+      permissions: { connect: connectSubjectPermissions('sales', true) },
+    },
+  });
+
+  const salesEmployeeRole = await prisma.role.upsert({
+    where: { name: 'SALES_EMPLOYEE' },
+    update: {},
+    create: {
+      name: 'SALES_EMPLOYEE',
+      permissions: { connect: connectSubjectPermissions('sales', false) },
+    },
+  });
+
   const extraRoles = [
     'CEO',
     'MARKETING_MANAGER',
