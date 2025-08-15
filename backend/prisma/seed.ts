@@ -7,51 +7,61 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // --- Create Permissions ---
-  const permissions = [
-    { action: 'create', subject: 'user' },
-    { action: 'read', subject: 'user' },
-    { action: 'update', subject: 'user' },
-    { action: 'delete', subject: 'user' },
+  const actions = ['create', 'read', 'update', 'delete'];
+  const subjects = ['user', 'marketing', 'sales', 'report'];
+
+  const permissions = subjects.flatMap((subject) =>
+    actions.map((action) => ({ action, subject }))
+  );
+  await prisma.permission.createMany({ data: permissions, skipDuplicates: true });
+
+  const connectAll = permissions.map((p) => ({
+    action_subject: { action: p.action, subject: p.subject },
+  }));
+  const connectSubject = (subject: string, allowDelete: boolean) =>
+    actions
+      .filter((a) => allowDelete || a !== 'delete')
+      .map((action) => ({ action_subject: { action, subject } }));
+  const readSubject = (subject: string) => [
+    { action_subject: { action: 'read', subject } },
   ];
 
-  await prisma.permission.createMany({
-    data: permissions,
-    skipDuplicates: true,
-  });
+  const roleSpecs = [
+    { name: 'ADMIN', perms: connectAll },
+    { name: 'USER', perms: [] },
+    { name: 'CEO', perms: connectAll },
+    {
+      name: 'MARKETING_MANAGER',
+      perms: connectSubject('marketing', true).concat(readSubject('report')),
+    },
+    { name: 'MARKETING_HEAD', perms: connectSubject('marketing', true) },
+    { name: 'MARKETING_EMPLOYEE', perms: connectSubject('marketing', false) },
+    {
+      name: 'SALES_MANAGER',
+      perms: connectSubject('sales', true).concat(readSubject('report')),
+    },
+    { name: 'SALES_HEAD', perms: connectSubject('sales', true) },
+    { name: 'SALES_EMPLOYEE', perms: connectSubject('sales', false) },
+  ];
 
-  // --- Create Roles ---
-  const adminRole = await prisma.role.upsert({
-    where: { name: 'ADMIN' },
-    update: {},
-    create: {
-      name: 'ADMIN',
-      permissions: {
-        connect: permissions.map((p) => ({
-          action_subject: { action: p.action, subject: p.subject },
-        })),
+  const roles: Record<string, { id: number }> = {};
+  for (const spec of roleSpecs) {
+    roles[spec.name] = await prisma.role.upsert({
+      where: { name: spec.name },
+      update: {},
+      create: {
+        name: spec.name,
+        ...(spec.perms.length ? { permissions: { connect: spec.perms } } : {}),
       },
-    },
-  });
+    });
+  }
 
-  const userRole = await prisma.role.upsert({
-    where: { name: 'USER' },
-    update: {},
-    create: {
-      name: 'USER',
-    },
-  });
-
-  // --- Create Users ---
   const passwordHash = await bcrypt.hash('admin@example.com', 10);
 
-  await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
-    update: {},
-    create: {
+  const userSpecs = [
+    {
       employeeId: 'EMP001',
       email: 'admin@example.com',
-      password: passwordHash,
       prefix: 'Mr.',
       firstName: 'Admin',
       lastName: 'System',
@@ -67,17 +77,11 @@ async function main() {
       startDate: new Date(),
       status: 'Active',
       company: 'My Company',
-      roleId: adminRole.id,
+      role: 'ADMIN',
     },
-  });
-
-  await prisma.user.upsert({
-    where: { email: 'user@example.com' },
-    update: {},
-    create: {
+    {
       employeeId: 'EMP002',
       email: 'user@example.com',
-      password: passwordHash,
       prefix: 'Ms.',
       firstName: 'Normal',
       lastName: 'User',
@@ -93,9 +97,58 @@ async function main() {
       startDate: new Date(),
       status: 'Active',
       company: 'My Company',
-      roleId: userRole.id,
+      role: 'USER',
     },
-  });
+    { employeeId: 'EMP010', email: 'ceo@example.com', name: 'CEO', role: 'CEO' },
+    {
+      employeeId: 'EMP011',
+      email: 'marketing.manager@example.com',
+      name: 'Marketing Manager',
+      role: 'MARKETING_MANAGER',
+    },
+    {
+      employeeId: 'EMP003',
+      email: 'marketing.head@example.com',
+      name: 'Marketing Head',
+      role: 'MARKETING_HEAD',
+    },
+    {
+      employeeId: 'EMP004',
+      email: 'marketing.employee@example.com',
+      name: 'Marketing Employee',
+      role: 'MARKETING_EMPLOYEE',
+    },
+    {
+      employeeId: 'EMP012',
+      email: 'sales.manager@example.com',
+      name: 'Sales Manager',
+      role: 'SALES_MANAGER',
+    },
+    {
+      employeeId: 'EMP005',
+      email: 'sales.head@example.com',
+      name: 'Sales Head',
+      role: 'SALES_HEAD',
+    },
+    {
+      employeeId: 'EMP006',
+      email: 'sales.employee@example.com',
+      name: 'Sales Employee',
+      role: 'SALES_EMPLOYEE',
+    },
+  ];
+
+  for (const { role, ...data } of userSpecs) {
+    await prisma.user.upsert({
+      where: { email: data.email },
+      update: {},
+      create: {
+        ...data,
+        password: passwordHash,
+        roleId: roles[role].id,
+      },
+    });
+  }
 
   console.log('✅ Seeding finished!');
 }
