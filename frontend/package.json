@@ -9,11 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@radix-ui/react-popover": "1.1.15",
     "@radix-ui/react-select": "^2.2.6",
-=======
->>>>>>> parent of 3e12fc5 (add ui)
     "@radix-ui/react-slot": "^1.2.3",
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.1",
