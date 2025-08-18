@@ -6,11 +6,6 @@ import api from '@/lib/api';
 import { toast } from 'sonner';
 import { ArrowLeft, Calendar as CalendarIcon } from 'lucide-react';
 import { useEffect, useState, ChangeEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
 
 type Province = {
   id: number;
@@ -140,18 +135,12 @@ export default function CreateEmployeePage() {
   };
 
   return (
-    <Card className="w-full min-h-full p-6 md:p-8">
+    <div className="bg-white w-full min-h-full rounded-2xl shadow-lg p-6 md:p-8">
       <div className="flex items-center mb-8">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => router.back()}
-          className="mr-4"
-        >
+        <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-gray-100 mr-4">
           <ArrowLeft size={24} />
-        </Button>
-        <h1 className="text-3xl font-bold">เพิ่มพนักงาน</h1>
+        </button>
+        <h1 className="text-3xl font-bold text-gray-800">เพิ่มพนักงาน</h1>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -160,228 +149,60 @@ export default function CreateEmployeePage() {
             ข้อมูลพนักงาน
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div>
-              <Label htmlFor="employeeId" className="block">
-                รหัสพนักงาน *
-              </Label>
-              <Input id="employeeId" className="mt-1" {...register('employeeId', { required: true })} />
-            </div>
-            <div>
-              <Label htmlFor="prefix" className="block">
-                คำนำหน้า *
-              </Label>
-              <Select id="prefix" className="mt-1 bg-white" {...register('prefix', { required: true })}>
-                <option value="">กรุณาเลือก</option>
-                <option>นาย</option>
-                <option>นาง</option>
-                <option>นางสาว</option>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="firstName" className="block">
-                ชื่อ *
-              </Label>
-              <Input id="firstName" className="mt-1" {...register('firstName', { required: true })} />
-            </div>
-            <div>
-              <Label htmlFor="lastName" className="block">
-                นามสกุล *
-              </Label>
-              <Input id="lastName" className="mt-1" {...register('lastName', { required: true })} />
-            </div>
-            <div className="relative">
-              <Label htmlFor="birthDate" className="block">
-                วันเกิด *
-              </Label>
-              <Input
-                id="birthDate"
-                type="date"
-                className="mt-1"
-                {...register('birthDate', { required: true })}
-              />
-              <CalendarIcon className="absolute right-3 top-9 text-gray-400" size={20} />
-            </div>
-            <div>
-              <Label htmlFor="age" className="block">
-                อายุ
-              </Label>
-              <Input id="age" className="mt-1" {...register('age')} />
-            </div>
-            <div>
-              <Label htmlFor="gender" className="block">
-                เพศ
-              </Label>
-              <Select id="gender" className="mt-1 bg-white" {...register('gender')}>
-                <option value="">กรุณาเลือก</option>
-                <option>ชาย</option>
-                <option>หญิง</option>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="phone" className="block">
-                เบอร์โทรศัพท์
-              </Label>
-              <Input id="phone" className="mt-1" {...register('phone')} />
-            </div>
-            <div>
-              <Label htmlFor="email" className="block">
-                อีเมล *
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                className="mt-1"
-                {...register('email', { required: true })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="password" className="block">
-                รหัสผ่าน *
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                className="mt-1"
-                {...register('password', { required: true, minLength: 6 })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="roleId" className="block">
-                สิทธิ์การใช้งาน *
-              </Label>
-              <Select id="roleId" className="mt-1 bg-white" {...register('roleId', { required: true })}>
-                <option value="">กรุณาเลือก</option>
-                {roles.map(r => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div className="md:col-span-2">
-              <Label htmlFor="address" className="block">
-                ที่อยู่
-              </Label>
-              <Input id="address" className="mt-1" {...register('address')} />
-            </div>
-            <div>
-              <Label className="block">จังหวัด</Label>
-              <Select
-                value={provinceId ?? ''}
-                onChange={handleProvinceChange}
-                className="mt-1 bg-white"
-              >
+            <div><label className="block text-sm font-medium text-gray-700">รหัสพนักงาน *</label><input {...register('employeeId', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">คำนำหน้า *</label><select {...register('prefix', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"><option value="">กรุณาเลือก</option><option>นาย</option><option>นาง</option><option>นางสาว</option></select></div>
+            <div><label className="block text-sm font-medium text-gray-700">ชื่อ *</label><input {...register('firstName', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">นามสกุล *</label><input {...register('lastName', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div className="relative"><label className="block text-sm font-medium text-gray-700">วันเกิด *</label><input type="date" {...register('birthDate', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /><CalendarIcon className="absolute right-3 top-9 text-gray-400" size={20} /></div>
+            <div><label className="block text-sm font-medium text-gray-700">อายุ</label><input {...register('age')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">เพศ</label><select {...register('gender')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"><option value="">กรุณาเลือก</option><option>ชาย</option><option>หญิง</option></select></div>
+            <div><label className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label><input {...register('phone')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">อีเมล *</label><input type="email" {...register('email', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">รหัสผ่าน *</label><input type="password" {...register('password', { required: true, minLength: 6 })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">สิทธิ์การใช้งาน *</label><select {...register('roleId', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"><option value="">กรุณาเลือก</option>{roles.map(r => (<option key={r.id} value={r.id}>{r.name}</option>))}</select></div>
+            <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700">ที่อยู่</label><input {...register('address')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">จังหวัด</label>
+              <select value={provinceId ?? ''} onChange={handleProvinceChange} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
                 <option value="">กรุณาเลือก</option>
                 {provinces.map(p => (
-                  <option key={p.id} value={p.id}>
-                    {p.name_th}
-                  </option>
+                  <option key={p.id} value={p.id}>{p.name_th}</option>
                 ))}
-              </Select>
+              </select>
             </div>
-            <div>
-              <Label className="block">อำเภอ</Label>
-              <Select
-                value={amphureId ?? ''}
-                onChange={handleAmphureChange}
-                className="mt-1 bg-white"
-                disabled={!provinceId}
-              >
+            <div><label className="block text-sm font-medium text-gray-700">อำเภอ</label>
+              <select value={amphureId ?? ''} onChange={handleAmphureChange} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" disabled={!provinceId}>
                 <option value="">กรุณาเลือก</option>
                 {filteredAmphures.map(a => (
-                  <option key={a.id} value={a.id}>
-                    {a.name_th}
-                  </option>
+                  <option key={a.id} value={a.id}>{a.name_th}</option>
                 ))}
-              </Select>
+              </select>
             </div>
-            <div>
-              <Label className="block">ตำบล</Label>
-              <Select
-                onChange={handleTambonChange}
-                className="mt-1 bg-white"
-                disabled={!amphureId}
-              >
+            <div><label className="block text-sm font-medium text-gray-700">ตำบล</label>
+              <select onChange={handleTambonChange} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" disabled={!amphureId}>
                 <option value="">กรุณาเลือก</option>
                 {filteredTambons.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name_th}
-                  </option>
+                  <option key={t.id} value={t.id}>{t.name_th}</option>
                 ))}
-              </Select>
+              </select>
             </div>
-            <div>
-              <Label htmlFor="postalCode" className="block">
-                รหัสไปรษณีย์
-              </Label>
-              <Input
-                id="postalCode"
-                readOnly
-                className="mt-1 bg-gray-100"
-                {...register('postalCode')}
-              />
-            </div>
-            <div>
-              <Label htmlFor="position" className="block">
-                ตำแหน่ง
-              </Label>
-              <Input id="position" className="mt-1" {...register('position')} />
-            </div>
-            <div>
-              <Label htmlFor="department" className="block">
-                แผนก
-              </Label>
-              <Input id="department" className="mt-1" {...register('department')} />
-            </div>
-            <div>
-              <Label htmlFor="startDate" className="block">
-                วันที่เริ่มงาน
-              </Label>
-              <Input id="startDate" type="date" className="mt-1" {...register('startDate')} />
-            </div>
-            <div>
-              <Label htmlFor="endDate" className="block">
-                วันที่สิ้นสุดพนักงาน
-              </Label>
-              <Input id="endDate" type="date" className="mt-1" {...register('endDate')} />
-            </div>
-            <div>
-              <Label htmlFor="managerId" className="block">
-                รหัสหัวหน้าพนักงาน
-              </Label>
-              <Input id="managerId" className="mt-1" {...register('managerId')} />
-            </div>
-            <div>
-              <Label htmlFor="status" className="block">
-                สถานะพนักงาน
-              </Label>
-              <Select id="status" className="mt-1 bg-white" {...register('status')}>
-                <option value="">กรุณาเลือก</option>
-                <option>Active</option>
-                <option>Inactive</option>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="company" className="block">
-                บริษัท
-              </Label>
-              <Input id="company" className="mt-1" {...register('company')} />
-            </div>
-            <div>
-              <Label htmlFor="responsibleArea" className="block">
-                เขตรับผิดชอบ
-              </Label>
-              <Input id="responsibleArea" className="mt-1" {...register('responsibleArea')} />
-            </div>
+            <div><label className="block text-sm font-medium text-gray-700">รหัสไปรษณีย์</label><input {...register('postalCode')} readOnly className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">ตำแหน่ง</label><input {...register('position')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">แผนก</label><input {...register('department')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">วันที่เริ่มงาน</label><input type="date" {...register('startDate')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">วันที่สิ้นสุดพนักงาน</label><input type="date" {...register('endDate')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">รหัสหัวหน้าพนักงาน</label><input {...register('managerId')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">สถานะพนักงาน</label><select {...register('status')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"><option value="">กรุณาเลือก</option><option>Active</option><option>Inactive</option></select></div>
+            <div><label className="block text-sm font-medium text-gray-700">บริษัท</label><input {...register('company')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
+            <div><label className="block text-sm font-medium text-gray-700">เขตรับผิดชอบ</label><input {...register('responsibleArea')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" /></div>
           </div>
         </div>
 
         <div className="flex justify-center">
-          <Button type="submit" disabled={isSubmitting} className="px-12 py-3 font-bold">
+          <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white font-bold py-3 px-12 rounded-lg hover:bg-blue-700 disabled:bg-blue-400">
             {isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
-          </Button>
+          </button>
         </div>
       </form>
-    </Card>
+    </div>
   );
 }
