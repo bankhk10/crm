@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = (accessToken: string, refreshToken: string) => {
     // Set cookies for session persistence
-    setCookie('accessToken', accessToken, 1 / 96); // 15 minutes
+    setCookie('accessToken', accessToken, 59 / (24 * 60))  // 59 minutes
     setCookie('refreshToken', refreshToken, 7); // 7 days
 
     // Set auth header for subsequent requests
