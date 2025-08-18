@@ -1,11 +1,13 @@
 'use client';
 
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
 import { toast } from 'sonner';
 import { ArrowLeft, Calendar as CalendarIcon } from 'lucide-react';
-import { useEffect, useState, ChangeEvent } from 'react';
+import { useEffect, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 type Province = {
   id: number;
@@ -60,12 +62,13 @@ export default function EditEmployeePage() {
   const router = useRouter();
   const params = useParams();
   const { id } = params as { id: string };
-  const { register, handleSubmit, setValue, formState: { isSubmitting } } = useForm<EditEmployeeFormInputs>();
+  const { register, handleSubmit, setValue, control, formState: { isSubmitting } } = useForm<EditEmployeeFormInputs>();
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [amphures, setAmphures] = useState<Amphure[]>([]);
   const [tambons, setTambons] = useState<Tambon[]>([]);
   const [provinceId, setProvinceId] = useState<number>();
   const [amphureId, setAmphureId] = useState<number>();
+  const [tambonId, setTambonId] = useState<number>();
   const [roles, setRoles] = useState<Role[]>([]);
   const [employeeId, setEmployeeId] = useState('');
 
@@ -121,6 +124,10 @@ export default function EditEmployeePage() {
           const amphure = amphuresData.find((a: Amphure) => a.name_th === user.district && a.province_id === province.id);
           if (amphure) {
             setAmphureId(amphure.id);
+            const tambon = tambonsData.find((t: Tambon) => t.name_th === user.subdistrict && t.amphure_id === amphure.id);
+            if (tambon) {
+              setTambonId(tambon.id);
+            }
           }
         }
       } catch (error) {
@@ -135,31 +142,6 @@ export default function EditEmployeePage() {
 
   const filteredAmphures = amphures.filter(a => a.province_id === provinceId);
   const filteredTambons = tambons.filter(t => t.amphure_id === amphureId);
-
-  const handleProvinceChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    setProvinceId(id);
-    setAmphureId(undefined);
-    setValue('province', e.target.options[e.target.selectedIndex].text);
-    setValue('district', '');
-    setValue('subdistrict', '');
-    setValue('postalCode', '');
-  };
-
-  const handleAmphureChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    setAmphureId(id);
-    setValue('district', e.target.options[e.target.selectedIndex].text);
-    setValue('subdistrict', '');
-    setValue('postalCode', '');
-  };
-
-  const handleTambonChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    const selected = tambons.find(t => t.id === id);
-    setValue('subdistrict', e.target.options[e.target.selectedIndex].text);
-    if (selected) setValue('postalCode', selected.zip_code.toString());
-  };
 
   const onSubmit: SubmitHandler<EditEmployeeFormInputs> = async (data) => {
     const payload: any = {
@@ -200,133 +182,240 @@ export default function EditEmployeePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">รหัสพนักงาน</label>
-              <input value={employeeId} readOnly className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" />
+              <Input value={employeeId} readOnly className="mt-1 bg-gray-100" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">คำนำหน้า *</label>
-              <select {...register('prefix', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
-                <option value="">กรุณาเลือก</option>
-                <option>นาย</option>
-                <option>นาง</option>
-                <option>นางสาว</option>
-              </select>
+              <Controller
+                name="prefix"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className="mt-1 w-full">
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="นาย">นาย</SelectItem>
+                      <SelectItem value="นาง">นาง</SelectItem>
+                      <SelectItem value="นางสาว">นางสาว</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">ชื่อ *</label>
-              <input {...register('firstName', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('firstName', { required: true })} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">นามสกุล *</label>
-              <input {...register('lastName', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('lastName', { required: true })} className="mt-1" />
             </div>
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700">วันเกิด *</label>
-              <input type="date" {...register('birthDate', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input type="date" {...register('birthDate', { required: true })} className="mt-1" />
               <CalendarIcon className="absolute right-3 top-9 text-gray-400" size={20} />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">อายุ</label>
-              <input {...register('age')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('age')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">เพศ</label>
-              <select {...register('gender')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
-                <option value="">กรุณาเลือก</option>
-                <option>ชาย</option>
-                <option>หญิง</option>
-              </select>
+              <Controller
+                name="gender"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className="mt-1 w-full">
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ชาย">ชาย</SelectItem>
+                      <SelectItem value="หญิง">หญิง</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">เบอร์โทรศัพท์</label>
-              <input {...register('phone')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('phone')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">อีเมล *</label>
-              <input type="email" {...register('email', { required: true })} readOnly className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" />
+              <Input type="email" {...register('email', { required: true })} readOnly className="mt-1 bg-gray-100" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">รหัสผ่านใหม่</label>
-              <input type="password" {...register('password', { minLength: 6 })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input type="password" {...register('password', { minLength: 6 })} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">สิทธิ์การใช้งาน *</label>
-              <select {...register('roleId', { required: true })} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
-                <option value="">กรุณาเลือก</option>
-                {roles.map(r => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
-              </select>
+              <Controller
+                name="roleId"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className="mt-1 w-full">
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map(r => (
+                        <SelectItem key={r.id} value={r.id.toString()}>{r.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700">ที่อยู่</label>
-              <input {...register('address')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('address')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">จังหวัด</label>
-              <select value={provinceId ?? ''} onChange={handleProvinceChange} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
-                <option value="">กรุณาเลือก</option>
-                {provinces.map(p => (
-                  <option key={p.id} value={p.id}>{p.name_th}</option>
-                ))}
-              </select>
+              <Controller
+                name="province"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={provinceId ? provinceId.toString() : ''}
+                    onValueChange={(value) => {
+                      const id = Number(value);
+                      const name = provinces.find(p => p.id === id)?.name_th || '';
+                      setProvinceId(id);
+                      setAmphureId(undefined);
+                      setTambonId(undefined);
+                      field.onChange(name);
+                      setValue('district', '');
+                      setValue('subdistrict', '');
+                      setValue('postalCode', '');
+                    }}
+                  >
+                    <SelectTrigger className="mt-1 w-full">
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {provinces.map(p => (
+                        <SelectItem key={p.id} value={p.id.toString()}>{p.name_th}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">อำเภอ</label>
-              <select value={amphureId ?? ''} onChange={handleAmphureChange} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" disabled={!provinceId}>
-                <option value="">กรุณาเลือก</option>
-                {filteredAmphures.map(a => (
-                  <option key={a.id} value={a.id}>{a.name_th}</option>
-                ))}
-              </select>
+              <Controller
+                name="district"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={amphureId ? amphureId.toString() : ''}
+                    onValueChange={(value) => {
+                      const id = Number(value);
+                      const name = filteredAmphures.find(a => a.id === id)?.name_th || '';
+                      setAmphureId(id);
+                      setTambonId(undefined);
+                      field.onChange(name);
+                      setValue('subdistrict', '');
+                      setValue('postalCode', '');
+                    }}
+                    disabled={!provinceId}
+                  >
+                    <SelectTrigger className="mt-1 w-full" disabled={!provinceId}>
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredAmphures.map(a => (
+                        <SelectItem key={a.id} value={a.id.toString()}>{a.name_th}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">ตำบล</label>
-              <select onChange={handleTambonChange} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white" disabled={!amphureId}>
-                <option value="">กรุณาเลือก</option>
-                {filteredTambons.map(t => (
-                  <option key={t.id} value={t.id}>{t.name_th}</option>
-                ))}
-              </select>
+              <Controller
+                name="subdistrict"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={tambonId ? tambonId.toString() : ''}
+                    onValueChange={(value) => {
+                      const id = Number(value);
+                      const selected = filteredTambons.find(t => t.id === id);
+                      setTambonId(id);
+                      field.onChange(selected?.name_th || '');
+                      if (selected) setValue('postalCode', selected.zip_code.toString());
+                    }}
+                    disabled={!amphureId}
+                  >
+                    <SelectTrigger className="mt-1 w-full" disabled={!amphureId}>
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredTambons.map(t => (
+                        <SelectItem key={t.id} value={t.id.toString()}>{t.name_th}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">รหัสไปรษณีย์</label>
-              <input {...register('postalCode')} readOnly className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100" />
+              <Input {...register('postalCode')} readOnly className="mt-1 bg-gray-100" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">ตำแหน่ง</label>
-              <input {...register('position')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('position')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">แผนก</label>
-              <input {...register('department')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('department')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">วันที่เริ่มงาน</label>
-              <input type="date" {...register('startDate')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input type="date" {...register('startDate')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">วันที่สิ้นสุดพนักงาน</label>
-              <input type="date" {...register('endDate')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input type="date" {...register('endDate')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">รหัสหัวหน้าพนักงาน</label>
-              <input {...register('managerId')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('managerId')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">สถานะพนักงาน</label>
-              <select {...register('status')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
-                <option value="">กรุณาเลือก</option>
-                <option>Active</option>
-                <option>Inactive</option>
-              </select>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className="mt-1 w-full">
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">บริษัท</label>
-              <input {...register('company')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('company')} className="mt-1" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">เขตรับผิดชอบ</label>
-              <input {...register('responsibleArea')} className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md" />
+              <Input {...register('responsibleArea')} className="mt-1" />
             </div>
           </div>
         </div>
