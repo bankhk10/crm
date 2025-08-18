@@ -1,12 +1,21 @@
 "use client";
 
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { ArrowLeft, Calendar as CalendarIcon } from "lucide-react";
 import { useEffect, useState, ChangeEvent } from "react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectTrigger,
@@ -71,6 +80,7 @@ export default function CreateEmployeePage() {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { isSubmitting, errors },
   } = useForm<CreateEmployeeFormInputs>();
   const [provinces, setProvinces] = useState<Province[]>([]);
@@ -237,18 +247,42 @@ export default function CreateEmployeePage() {
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
               />
             </div>
-            <div className="relative">
+            <div>
               <label className="block text-sm font-medium text-gray-700">
                 วันเกิด *
               </label>
-              <input
-                type="date"
-                {...register("birthDate", { required: true })}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-              <CalendarIcon
-                className="absolute right-3 top-9 text-gray-400"
-                size={20}
+              <Controller
+                name="birthDate"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "mt-1 w-full justify-start text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {field.value
+                          ? format(new Date(field.value), "PPP")
+                          : "เลือกวัน"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value ? new Date(field.value) : undefined}
+                        onSelect={(date) =>
+                          field.onChange(date ? date.toISOString() : "")
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
               />
             </div>
             <div>
