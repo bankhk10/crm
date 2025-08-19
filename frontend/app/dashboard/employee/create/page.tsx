@@ -295,7 +295,7 @@ export default function CreateEmployeePage() {
                     ref={birthButtonRef}
                     variant="outline"
                     className={cn(
-                      "w-full justify-between text-left font-normal",
+                      "h-10 w-full justify-between text-left font-normal",
                       !birthDate && "text-gray-400",
                       errors.birthDate && "border-red-500"
                     )}
@@ -646,7 +646,7 @@ export default function CreateEmployeePage() {
                     ref={startButtonRef}
                     variant="outline"
                     className={cn(
-                      "w-full justify-between text-left font-normal",
+                      "h-10 w-full justify-between text-left font-normal",
                       !startDate && "text-gray-400",
                       errors.startDate && "border-red-500"
                     )}
@@ -716,7 +716,7 @@ export default function CreateEmployeePage() {
                     ref={endButtonRef}
                     variant="outline"
                     className={cn(
-                      "w-full justify-between text-left font-normal",
+                      "h-10 w-full justify-between text-left font-normal",
                       !endDate && "text-gray-400",
                       errors.endDate && "border-red-500"
                     )}
