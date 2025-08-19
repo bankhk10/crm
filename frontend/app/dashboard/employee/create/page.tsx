@@ -26,6 +26,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Eye, EyeOff } from "lucide-react";
 
 type Province = {
   id: number;
@@ -99,6 +100,7 @@ export default function CreateEmployeePage() {
   const [openStart, setOpenStart] = useState(false);
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [openEnd, setOpenEnd] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -283,7 +285,6 @@ export default function CreateEmployeePage() {
                 </p>
               )}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 วันเกิด *
@@ -291,10 +292,11 @@ export default function CreateEmployeePage() {
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button
-                    ref={birthButtonRef} // <–– เอา focus มาใส่ตรงนี้แทน
+                    ref={birthButtonRef}
                     variant="outline"
                     className={cn(
                       "w-full justify-between text-left font-normal",
+                      !birthDate && "text-gray-400",
                       errors.birthDate && "border-red-500"
                     )}
                   >
@@ -312,10 +314,15 @@ export default function CreateEmployeePage() {
                       captionLayout="dropdown"
                       onSelect={(day) => {
                         setBirthDate(day);
-                        if (day) setValue("birthDate", day.toISOString());
+                        if (day) {
+                          setValue("birthDate", day.toISOString(), {
+                            shouldValidate: true,
+                          });
+                        }
                       }}
                       initialFocus
                     />
+
                     <div className="flex justify-center gap-3 mt-4">
                       <Button
                         size="sm"
@@ -407,17 +414,30 @@ export default function CreateEmployeePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 รหัสผ่าน *
               </label>
-              <Input
-                type="password"
-                {...register("password", {
-                  required: "กรุณากรอกรหัสผ่าน",
-                  minLength: {
-                    value: 6,
-                    message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
-                  },
-                })}
-                className={cn(errors.password && "border-red-500")}
-              />
+
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  {...register("password", {
+                    required: "กรุณากรอกรหัสผ่าน",
+                    minLength: {
+                      value: 6,
+                      message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+                    },
+                  })}
+                  className={cn(
+                    errors.password && "border-red-500 pr-10" // เพิ่ม padding เผื่อ icon
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
               {errors.password && (
                 <p className="flex items-center mt-1 text-xs text-red-500">
                   <AlertTriangle size={14} className="mr-1" />
@@ -583,7 +603,7 @@ export default function CreateEmployeePage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                แผนก
+                แผนก *
               </label>
               <Select
                 onValueChange={(value) =>
@@ -604,15 +624,15 @@ export default function CreateEmployeePage() {
                   <SelectItem value="Marketing ">ฝ่ายการตลาด</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.prefix && (
+              {errors.department && (
                 <p className="flex items-center mt-1 text-xs text-red-500">
                   <AlertTriangle size={14} className="mr-1" />
-                  {errors.prefix.message as string}
+                  {errors.department.message as string}
                 </p>
               )}
               <input
                 type="hidden"
-                {...register("department", { required: "กรุณาเลือกคำนำหน้า" })}
+                {...register("department", { required: "กรุณาเลือแผนก" })}
               />
             </div>
 
@@ -627,6 +647,7 @@ export default function CreateEmployeePage() {
                     variant="outline"
                     className={cn(
                       "w-full justify-between text-left font-normal",
+                      !startDate && "text-gray-400",
                       errors.startDate && "border-red-500"
                     )}
                   >
@@ -644,7 +665,11 @@ export default function CreateEmployeePage() {
                       captionLayout="dropdown"
                       onSelect={(day) => {
                         setStartDate(day);
-                        if (day) setValue("startDate", day.toISOString());
+                        if (day) {
+                          setValue("startDate", day.toISOString(), {
+                            shouldValidate: true,
+                          });
+                        }
                       }}
                     />
                     <div className="flex justify-center gap-3 mt-4">
@@ -690,7 +715,11 @@ export default function CreateEmployeePage() {
                   <Button
                     ref={endButtonRef}
                     variant="outline"
-                    className="w-full justify-between text-left font-normal"
+                    className={cn(
+                      "w-full justify-between text-left font-normal",
+                      !endDate && "text-gray-400",
+                      errors.endDate && "border-red-500"
+                    )}
                   >
                     {endDate
                       ? format(endDate, "dd/MM/yyyy", { locale: th })
@@ -706,9 +735,14 @@ export default function CreateEmployeePage() {
                       captionLayout="dropdown"
                       onSelect={(day) => {
                         setEndDate(day);
-                        if (day) setValue("endDate", day.toISOString());
+                        if (day) {
+                          setValue("endDate", day.toISOString(), {
+                            shouldValidate: true,
+                          });
+                        }
                       }}
                     />
+
                     <div className="flex justify-center gap-3 mt-4">
                       <Button
                         size="sm"
@@ -794,12 +828,12 @@ export default function CreateEmployeePage() {
                   <SelectValue placeholder="กรุณาเลือก" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Central">ภาคกลาง</SelectItem>
-                  <SelectItem value="Northern">ภาคเหนือ</SelectItem>
-                  <SelectItem value="Northeastern">
+                  <SelectItem value="ภาคกลาง">ภาคกลาง</SelectItem>
+                  <SelectItem value="ภาคกลาง">ภาคกลาง</SelectItem>
+                  <SelectItem value="ภาคตะวันออกเฉียงเหนือ">
                     ภาคตะวันออกเฉียงเหนือ
                   </SelectItem>
-                  <SelectItem value="Southern"> ภาคใต้</SelectItem>
+                  <SelectItem value="ภาคใต้">ภาคใต้</SelectItem>
                 </SelectContent>
               </Select>
             </div>
