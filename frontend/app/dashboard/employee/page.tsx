@@ -88,42 +88,54 @@ const UserCard = ({ user, onDelete }: { user: User; onDelete: () => void }) => {
     { label: "กำลังทำ", value: Math.floor(Math.random() * 60) },
     { label: "สำเร็จ", value: Math.floor(Math.random() * 30) },
   ];
+
   return (
-    <div className="bg-white rounded-2xl shadow-md p-6 flex flex-col items-center text-center transition-transform transform hover:-translate-y-2">
-      <div className="w-full flex justify-end">
-        <button
-          onClick={onDelete}
-          disabled={currentUser?.id === user.id}
-          className="text-gray-400 hover:text-red-500 disabled:text-gray-200 disabled:cursor-not-allowed"
-        >
-          <Trash2 size={20} />
-        </button>
+    <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col items-center text-center transition-transform transform hover:-translate-y-2">
+      <div className="w-full bg-[#568fd4] bg-opacity-10 rounded-2xl pb-4 pt-2 px-2">
+        {/* delete button */}
+        <div className="w-full flex justify-end px-3 mt-2">
+          <button
+            onClick={onDelete}
+            disabled={currentUser?.id === user.id}
+            className="text-gray-400 hover:text-red-500 disabled:text-gray-200 disabled:cursor-not-allowed"
+          >
+            <Trash2 size={25} />
+          </button>
+        </div>
+
+        {/* avatar */}
+        <div className="relative w-24 h-24 rounded-full overflow-hidden mx-auto -mt-4">
+          <Image
+            src="/images/man-avatar.png"
+            alt={user.name}
+            layout="fill"
+            className="object-cover"
+          />
+        </div>
+
+        {/* name + role */}
+        <h3 className="font-bold text-lg text-gray-800 mt-2">{user.name}</h3>
+        <p className="text-sm text-gray-500 mb-3">
+          {user.role.name === "USER" ? "เซลล์" : user.role.name}
+        </p>
+
+        {/* center buttons */}
+        <div className="flex justify-center space-x-3">
+          <Link href={`/dashboard/employee/${user.id}/edit`}>
+            <div className="bg-gray-200 text-gray-700 text-sm font-semibold px-5 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-300 cursor-pointer shadow-sm">
+              แก้ไข
+            </div>
+          </Link>
+          <Link href={`/dashboard/employee/${user.id}`}>
+            <div className="bg-gray-200 text-gray-700 text-sm font-semibold px-5 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-300 cursor-pointer shadow-sm">
+              ประวัติ
+            </div>
+          </Link>
+        </div>
       </div>
-      <div className="relative w-24 h-24 rounded-full overflow-hidden mb-4 -mt-4">
-        <Image
-          src="/images/man-avatar.png"
-          alt={user.name}
-          layout="fill"
-          className="object-cover"
-        />
-      </div>
-      <h3 className="font-bold text-lg text-gray-800">{user.name}</h3>
-      <p className="text-sm text-gray-500 mb-4">
-        {user.role.name === "USER" ? "เซลล์" : user.role.name}
-      </p>
-      <div className="flex space-x-4 mb-6">
-        <Link href={`/dashboard/employee/${user.id}/edit`}>
-          <div className="bg-gray-200 text-gray-700 text-sm font-semibold px-5 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-300 cursor-pointer shadow-sm">
-            แก้ไข
-          </div>
-        </Link>
-        <Link href={`/dashboard/employee/${user.id}`}>
-          <div className="bg-gray-200 text-gray-700 text-sm font-semibold px-5 py-1.5 rounded-xl border border-gray-300 hover:bg-gray-300 cursor-pointer shadow-sm">
-            ประวัติ
-          </div>
-        </Link>
-      </div>
-      <div className="w-full flex justify-around border-t border-gray-200 pt-4">
+
+      {/* stats */}
+      <div className="w-full flex justify-around border-t border-gray-200 pt-4 mt-2">
         {stats.map((stat) => (
           <div key={stat.label}>
             <p className="font-bold text-xl text-gray-900">{stat.value}</p>
