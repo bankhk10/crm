@@ -150,7 +150,15 @@ export default function CreateEmployeePage() {
       toast.success("บันทึกพนักงานสำเร็จ");
       router.push("/dashboard/employee");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "บันทึกพนักงานไม่สำเร็จ");
+      const message = error.response?.data?.message as string | undefined;
+      if (
+        error.response?.status === 409 ||
+        (message && /duplicate|exists|unique/i.test(message))
+      ) {
+        toast.error("รหัสพนักงานหรืออีเมลนี้มีอยู่แล้ว");
+      } else {
+        toast.error(message || "บันทึกพนักงานไม่สำเร็จ");
+      }
     }
   };
 
