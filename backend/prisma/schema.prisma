@@ -62,3 +62,25 @@ model Permission {
 
   @@unique([action, subject])
 }
+
+model Province {
+  id       Int      @id
+  name_th  String
+  amphures Amphure[]
+}
+
+model Amphure {
+  id          Int       @id
+  name_th     String
+  province_id Int
+  province    Province  @relation(fields: [province_id], references: [id])
+  tambons     Tambon[]
+}
+
+model Tambon {
+  id         Int      @id
+  name_th    String
+  amphure_id Int
+  zip_code   Int?
+  amphure    Amphure  @relation(fields: [amphure_id], references: [id])
+}
