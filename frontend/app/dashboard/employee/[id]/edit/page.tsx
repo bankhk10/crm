@@ -87,6 +87,7 @@ export default function EditEmployeePage() {
     control,
     reset,
     setValue, // ✅ ใช้ sync birthDate (ISO) ตอนเลือกวันที่
+    watch,
     formState: { isSubmitting, errors },
   } = useForm<EditEmployeeFormInputs>();
 
@@ -107,6 +108,7 @@ export default function EditEmployeePage() {
   const [open, setOpen] = useState(false);
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
   const birthButtonRef = useRef<HTMLButtonElement>(null);
+  const postalCodeWatch = watch("postalCode");
 
   // helper สำหรับ normalize ชื่อเขตการปกครองไทย
   const normalizeThai = (s?: string) =>
@@ -142,6 +144,33 @@ export default function EditEmployeePage() {
         setAmphures(amphuresData);
         setTambons(tambonsData);
         setRoles(rolesData);
+
+        // ใส่ค่าลงฟอร์มทีเดียวด้วย reset
+        reset({
+          employeeId: user.employeeId ?? "",
+          prefix: user.prefix ?? "",
+          firstName: user.firstName ?? "",
+          lastName: user.lastName ?? "",
+          age: user.age ? String(user.age) : "",
+          gender: user.gender ?? "",
+          phone: user.phone ?? "",
+          email: user.email ?? "",
+          roleId: String(user.roleId ?? ""),
+          birthDate: "", // ← เราจะ set ผ่าน state + setValue (ISO) ด้านล่าง
+          address: user.address ?? "",
+          subdistrict: user.subdistrict ?? "",
+          district: user.district ?? "",
+          province: user.province ?? "",
+          postalCode: user.postalCode ?? "",
+          position: user.position ?? "",
+          department: user.department ?? "",
+          startDate: user.startDate ? user.startDate.substring(0, 10) : "",
+          endDate: user.endDate ? user.endDate.substring(0, 10) : "",
+          managerId: user.managerId ?? "",
+          status: user.status ?? "",
+          company: user.company ?? "",
+          responsibleArea: user.responsibleArea ?? "",
+        });
 
         // ===== Preselect จังหวัด/อำเภอ/ตำบล จากข้อมูลเดิม =====
         const province = provincesData.find(
@@ -212,33 +241,6 @@ export default function EditEmployeePage() {
           });
         }
 
-        // ใส่ค่าลงฟอร์มทีเดียวด้วย reset
-        reset({
-          employeeId: user.employeeId ?? "",
-          prefix: user.prefix ?? "",
-          firstName: user.firstName ?? "",
-          lastName: user.lastName ?? "",
-          age: user.age ? String(user.age) : "",
-          gender: user.gender ?? "",
-          phone: user.phone ?? "",
-          email: user.email ?? "",
-          roleId: String(user.roleId ?? ""),
-          birthDate: "", // ← เราจะ set ผ่าน state + setValue (ISO) ด้านล่าง
-          address: user.address ?? "",
-          subdistrict: user.subdistrict ?? "",
-          district: user.district ?? "",
-          province: user.province ?? "",
-          postalCode: user.postalCode ?? "",
-          position: user.position ?? "",
-          department: user.department ?? "",
-          startDate: user.startDate ? user.startDate.substring(0, 10) : "",
-          endDate: user.endDate ? user.endDate.substring(0, 10) : "",
-          managerId: user.managerId ?? "",
-          status: user.status ?? "",
-          company: user.company ?? "",
-          responsibleArea: user.responsibleArea ?? "",
-        });
-
         setEmployeeIdForUrl(user.employeeId);
 
         // ✅ ตั้งค่า birthDate สำหรับ Date Picker + sync เข้า form (ISO)
@@ -280,42 +282,7 @@ export default function EditEmployeePage() {
     [tambons, amphureId]
   );
 
-  const handleProvinceChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    setProvinceId(id);
-    setAmphureId(undefined);
-    setTambonId(undefined);
-    reset((prev) => ({
-      ...prev,
-      province: e.target.options[e.target.selectedIndex].text,
-      district: "",
-      subdistrict: "",
-      postalCode: "",
-    }));
-  };
-
-  const handleAmphureChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    setAmphureId(id);
-    setTambonId(undefined);
-    reset((prev) => ({
-      ...prev,
-      district: e.target.options[e.target.selectedIndex].text,
-      subdistrict: "",
-      postalCode: "",
-    }));
-  };
-
-  const handleTambonChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    const selected = tambons.find((t) => t.id === id);
-    setTambonId(id);
-    reset((prev) => ({
-      ...prev,
-      subdistrict: e.target.options[e.target.selectedIndex].text,
-      postalCode: selected ? String(selected.zip_code) : prev.postalCode,
-    }));
-  };
+  // handlers were replaced by shadcn Select onValueChange logic
 
   const onSubmit: SubmitHandler<EditEmployeeFormInputs> = async (data) => {
     const payload: any = {
@@ -639,7 +606,7 @@ export default function EditEmployeePage() {
                 จังหวัด
               </label>
               <Select
-                value={provinceId ? String(provinceId) : ""}
+                value={provinceId ? String(provinceId) : undefined}
                 onValueChange={(value) => {
                   const id = Number(value);
                   setProvinceId(id);
@@ -678,7 +645,7 @@ export default function EditEmployeePage() {
                 อำเภอ
               </label>
               <Select
-                value={amphureId ? String(amphureId) : ""}
+                value={amphureId ? String(amphureId) : undefined}
                 onValueChange={(value) => {
                   const id = Number(value);
                   setAmphureId(id);
@@ -716,7 +683,7 @@ export default function EditEmployeePage() {
                 ตำบล
               </label>
               <Select
-                value={tambonId ? String(tambonId) : ""}
+                value={tambonId ? String(tambonId) : undefined}
                 onValueChange={(value) => {
                   const id = Number(value);
                   setTambonId(id);
@@ -751,6 +718,7 @@ export default function EditEmployeePage() {
               </label>
               <Input
                 readOnly
+                value={postalCodeWatch || ""}
                 {...register("postalCode")}
                 className="bg-gray-100"
               />
@@ -766,10 +734,34 @@ export default function EditEmployeePage() {
 
             {/* แผนก */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 แผนก
               </label>
-              <Input {...register("department")} />
+              <Controller
+                name="department"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="IT">ฝ่ายเทคโนโลยีสารสนเทศ</SelectItem>
+                      <SelectItem value="Sales">ฝ่ายขาย</SelectItem>
+                      <SelectItem value="Marketing">ฝ่ายการตลาด</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.department && (
+                <p className="flex items-center mt-1 text-xs text-red-500">
+                  <AlertTriangle size={14} className="mr-1" />
+                  {errors.department.message as string}
+                </p>
+              )}
             </div>
 
             {/* วันที่เริ่มงาน */}
