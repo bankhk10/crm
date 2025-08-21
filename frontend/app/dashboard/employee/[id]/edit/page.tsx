@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, ChangeEvent, useMemo, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { useRouter, useParams } from "next/navigation";
 import api from "@/lib/api";
@@ -26,24 +26,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
-
-type Province = {
-  id: number;
-  name_th: string;
-};
-
-type Amphure = {
-  id: number;
-  name_th: string;
-  province_id: number;
-};
-
-type Tambon = {
-  id: number;
-  name_th: string;
-  amphure_id: number;
-  zip_code: string;
-};
+import ThaiAddressPicker from "@/components/ThaiAddressPicker";
 
 type Role = {
   id: number;
@@ -91,12 +74,6 @@ export default function EditEmployeePage() {
     formState: { isSubmitting, errors },
   } = useForm<EditEmployeeFormInputs>();
 
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [amphures, setAmphures] = useState<Amphure[]>([]);
-  const [tambons, setTambons] = useState<Tambon[]>([]);
-  const [provinceId, setProvinceId] = useState<number>();
-  const [amphureId, setAmphureId] = useState<number>();
-  const [tambonId, setTambonId] = useState<number>();
   const [roles, setRoles] = useState<Role[]>([]);
   const [employeeIdForUrl, setEmployeeIdForUrl] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -108,43 +85,22 @@ export default function EditEmployeePage() {
   const [open, setOpen] = useState(false);
   const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
   const birthButtonRef = useRef<HTMLButtonElement>(null);
-
-  // helper สำหรับ normalize ชื่อเขตการปกครองไทย
-  const normalizeThai = (s?: string) =>
-    (s ?? "")
-      .trim()
-      .replace(/^(อำเภอ|เขต|ตำบล|แขวง)\s*/g, "")
-      .replace(/\s+/g, "");
+  const [addressDefaults, setAddressDefaults] = useState<{
+    province?: string;
+    district?: string;
+    subdistrict?: string;
+    postalCode?: string;
+  }>({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [pRes, aRes, tRes, userRes, rolesRes] = await Promise.all([
-          fetch(
-            "https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json"
-          ),
-          fetch(
-            "https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json"
-          ),
-          fetch(
-            "https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json"
-          ),
-          api.get(`/users/${id}`), // ถ้าของจริงคือ /employees/:id เปลี่ยนตรงนี้ด้วย
+        const [userRes, rolesRes] = await Promise.all([
+          api.get(`/users/${id}`),
           api.get("/roles"),
         ]);
-
-        const provincesData: Province[] = await pRes.json();
-        const amphuresData: Amphure[] = await aRes.json();
-        const tambonsData: Tambon[] = await tRes.json();
         const user = userRes.data;
-        const rolesData: Role[] = rolesRes.data;
-
-        setProvinces(provincesData);
-        setAmphures(amphuresData);
-        setTambons(tambonsData);
-        setRoles(rolesData);
-
-        // ใส่ค่าลงฟอร์มทีเดียวด้วย reset
+        setRoles(rolesRes.data);
         reset({
           employeeId: user.employeeId ?? "",
           prefix: user.prefix ?? "",
@@ -155,12 +111,12 @@ export default function EditEmployeePage() {
           phone: user.phone ?? "",
           email: user.email ?? "",
           roleId: String(user.roleId ?? ""),
-          birthDate: "", // ← เราจะ set ผ่าน state + setValue (ISO) ด้านล่าง
+          birthDate: "",
           address: user.address ?? "",
-          subdistrict: user.subdistrict ?? "",
-          district: user.district ?? "",
-          province: user.province ?? "",
-          postalCode: user.postalCode ?? "",
+          subdistrict: "",
+          district: "",
+          province: "",
+          postalCode: "",
           position: user.position ?? "",
           department: user.department ?? "",
           startDate: user.startDate ? user.startDate.substring(0, 10) : "",
@@ -170,10 +126,13 @@ export default function EditEmployeePage() {
           company: user.company ?? "",
           responsibleArea: user.responsibleArea ?? "",
         });
-
         setEmployeeIdForUrl(user.employeeId);
-
-        // ✅ ตั้งค่า birthDate สำหรับ Date Picker + sync เข้า form (ISO)
+        setAddressDefaults({
+          province: user.province ?? "",
+          district: user.district ?? "",
+          subdistrict: user.subdistrict ?? "",
+          postalCode: user.postalCode ?? "",
+        });
         if (user.birthDate) {
           const d = new Date(user.birthDate);
           setBirthDate(d);
@@ -182,49 +141,11 @@ export default function EditEmployeePage() {
           setBirthDate(undefined);
           setValue("birthDate", "", { shouldValidate: false });
         }
-
-        // map จังหวัด/อำเภอ/ตำบล ให้ dropdown preselect
-        const province = provincesData.find(
-          (p) => normalizeThai(p.name_th) === normalizeThai(user.province)
-        );
-        if (province) setProvinceId(province.id);
-
-        let amphure: Amphure | undefined;
-        if (province) {
-          amphure = amphuresData.find(
-            (a) =>
-              a.province_id === province.id &&
-              normalizeThai(a.name_th) === normalizeThai(user.district)
-          );
-        }
-
-        const tambonFound = tambonsData.find(
-          (t) => normalizeThai(t.name_th) === normalizeThai(user.subdistrict)
-        );
-
-        if (!amphure && tambonFound) {
-          amphure = amphuresData.find((a) => a.id === tambonFound.amphure_id);
-        }
-
-        if (amphure) setAmphureId(amphure.id);
-        if (tambonFound) {
-          setTambonId(tambonFound.id);
-          // เติม zip ถ้าผู้ใช้ยังไม่มี
-          if (!user.postalCode && tambonFound.zip_code) {
-            reset((prev) => ({
-              ...prev,
-              postalCode: String(tambonFound.zip_code),
-            }));
-          }
-        } else {
-          setTambonId(undefined);
-        }
         if (user.startDate) {
           const d = new Date(user.startDate);
           setStartDate(d);
           setValue("startDate", d.toISOString(), { shouldValidate: false });
         }
-
         if (user.endDate) {
           const d = new Date(user.endDate);
           setEndDate(d);
@@ -239,51 +160,6 @@ export default function EditEmployeePage() {
     if (id) fetchData();
   }, [id, reset, router, setValue]);
 
-  const filteredAmphures = useMemo(
-    () => amphures.filter((a) => a.province_id === provinceId),
-    [amphures, provinceId]
-  );
-  const filteredTambons = useMemo(
-    () => tambons.filter((t) => t.amphure_id === amphureId),
-    [tambons, amphureId]
-  );
-
-  const handleProvinceChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    setProvinceId(id);
-    setAmphureId(undefined);
-    setTambonId(undefined);
-    reset((prev) => ({
-      ...prev,
-      province: e.target.options[e.target.selectedIndex].text,
-      district: "",
-      subdistrict: "",
-      postalCode: "",
-    }));
-  };
-
-  const handleAmphureChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    setAmphureId(id);
-    setTambonId(undefined);
-    reset((prev) => ({
-      ...prev,
-      district: e.target.options[e.target.selectedIndex].text,
-      subdistrict: "",
-      postalCode: "",
-    }));
-  };
-
-  const handleTambonChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value);
-    const selected = tambons.find((t) => t.id === id);
-    setTambonId(id);
-    reset((prev) => ({
-      ...prev,
-      subdistrict: e.target.options[e.target.selectedIndex].text,
-      postalCode: selected ? String(selected.zip_code) : prev.postalCode,
-    }));
-  };
 
   const onSubmit: SubmitHandler<EditEmployeeFormInputs> = async (data) => {
     const payload: any = {
@@ -601,76 +477,11 @@ export default function EditEmployeePage() {
               <Input {...register("address")} />
             </div>
 
-            {/* จังหวัด */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                จังหวัด
-              </label>
-              <select
-                value={provinceId ?? ""}
-                onChange={handleProvinceChange}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
-              >
-                <option value="">กรุณาเลือก</option>
-                {provinces.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name_th}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* อำเภอ */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                อำเภอ
-              </label>
-              <select
-                value={amphureId ?? ""}
-                onChange={handleAmphureChange}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
-                disabled={!provinceId}
-              >
-                <option value="">กรุณาเลือก</option>
-                {filteredAmphures.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name_th}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* ตำบล */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                ตำบล
-              </label>
-              <select
-                value={tambonId ?? ""}
-                onChange={handleTambonChange}
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
-                disabled={!amphureId}
-              >
-                <option value="">กรุณาเลือก</option>
-                {filteredTambons.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name_th}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* รหัสไปรษณีย์ */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                รหัสไปรษณีย์
-              </label>
-              <Input
-                readOnly
-                {...register("postalCode")}
-                className="bg-gray-100"
-              />
-            </div>
+            <ThaiAddressPicker
+              register={register}
+              setValue={setValue}
+              defaultValues={addressDefaults}
+            />
 
             {/* ตำแหน่ง */}
             <div>

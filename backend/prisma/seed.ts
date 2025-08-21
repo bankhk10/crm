@@ -7,6 +7,42 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
+  const [provinceData, amphureData, tambonData] = await Promise.all([
+    fetch(
+      'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json'
+    ).then((r) => r.json()),
+    fetch(
+      'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json'
+    ).then((r) => r.json()),
+    fetch(
+      'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json'
+    ).then((r) => r.json()),
+  ]);
+
+  await prisma.province.createMany({
+    data: provinceData.map((p: any) => ({ id: p.id, name_th: p.name_th })),
+    skipDuplicates: true,
+  });
+
+  await prisma.amphure.createMany({
+    data: amphureData.map((a: any) => ({
+      id: a.id,
+      name_th: a.name_th,
+      province_id: a.province_id,
+    })),
+    skipDuplicates: true,
+  });
+
+  await prisma.tambon.createMany({
+    data: tambonData.map((t: any) => ({
+      id: t.id,
+      name_th: t.name_th,
+      amphure_id: t.amphure_id,
+      zip_code: t.zip_code,
+    })),
+    skipDuplicates: true,
+  });
+
   const actions = ['create', 'read', 'update', 'delete'];
   const subjects = ['user', 'marketing', 'sales', 'report'];
 
