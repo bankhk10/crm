@@ -401,6 +401,8 @@ export default function CreateEmployeePage() {
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md"
               />
             </div>
+
+            {/* จังหวัด */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 จังหวัด
@@ -434,6 +436,7 @@ export default function CreateEmployeePage() {
               <input type="hidden" {...register("province")} />
             </div>
 
+            {/* อำเภอ */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 อำเภอ
@@ -466,6 +469,7 @@ export default function CreateEmployeePage() {
               <input type="hidden" {...register("district")} />
             </div>
 
+            {/* ตำบล */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 ตำบล
@@ -495,6 +499,7 @@ export default function CreateEmployeePage() {
               <input type="hidden" {...register("subdistrict")} />
             </div>
 
+            {/* รหัสไปรษณีย์ */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 รหัสไปรษณีย์
