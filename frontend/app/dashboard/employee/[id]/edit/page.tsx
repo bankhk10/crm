@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, ChangeEvent, useMemo, useRef } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { useRouter, useParams } from "next/navigation";
 import api from "@/lib/api";
@@ -16,6 +16,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
+// ✅ เพิ่มสำหรับ Date Picker ของ shadcn
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -143,75 +144,6 @@ export default function EditEmployeePage() {
         setTambons(tambonsData);
         setRoles(rolesData);
 
-        // ===== Preselect จังหวัด/อำเภอ/ตำบล จากข้อมูลเดิม =====
-        const province = provincesData.find(
-          (p) => normalizeThai(p.name_th) === normalizeThai(user.province)
-        );
-
-        // ตั้ง provinceId และ sync ชื่อจังหวัดเข้า form (กันกรณีที่ชื่อใน DB ไม่ตรง dataset)
-        if (province) {
-          setProvinceId(province.id);
-          setValue("province", province.name_th ?? "", {
-            shouldValidate: false,
-          });
-        } else {
-          setProvinceId(undefined);
-          setValue("province", user.province ?? "", { shouldValidate: false });
-        }
-
-        // หาอำเภอตามจังหวัด + ชื่อในข้อมูลเดิม
-        let amphure: Amphure | undefined;
-        if (province) {
-          amphure = amphuresData.find(
-            (a) =>
-              a.province_id === province.id &&
-              normalizeThai(a.name_th) === normalizeThai(user.district)
-          );
-        }
-
-        // ถ้ายังไม่เจออำเภอ แต่มีตำบล → หาอำเภอย้อนจากตำบล
-        const tambonFound = tambonsData.find(
-          (t) => normalizeThai(t.name_th) === normalizeThai(user.subdistrict)
-        );
-        if (!amphure && tambonFound) {
-          amphure = amphuresData.find((a) => a.id === tambonFound.amphure_id);
-        }
-
-        // ตั้งค่าอำเภอ + sync ชื่อเข้า form
-        if (amphure) {
-          setAmphureId(amphure.id);
-          setValue("district", amphure.name_th ?? "", {
-            shouldValidate: false,
-          });
-        } else {
-          setAmphureId(undefined);
-          setValue("district", user.district ?? "", { shouldValidate: false });
-        }
-
-        // ตั้งค่าตำบล + sync ชื่อ + รหัสไปรษณีย์
-        if (tambonFound) {
-          setTambonId(tambonFound.id);
-          setValue("subdistrict", tambonFound.name_th ?? "", {
-            shouldValidate: false,
-          });
-
-          const zipFromTambon = tambonFound.zip_code
-            ? String(tambonFound.zip_code)
-            : "";
-          // ถ้า user มี postalCode เดิมแล้วให้คงไว้ ไม่งั้นเติมจากชุดข้อมูล
-          setValue("postalCode", user.postalCode || zipFromTambon, {
-            shouldValidate: false,
-          });
-        } else {
-          setTambonId(undefined);
-          setValue("subdistrict", user.subdistrict ?? "", {
-            shouldValidate: false,
-          });
-          setValue("postalCode", user.postalCode ?? "", {
-            shouldValidate: false,
-          });
-        }
-
         // ใส่ค่าลงฟอร์มทีเดียวด้วย reset
         reset({
           employeeId: user.employeeId ?? "",
@@ -250,7 +182,43 @@ export default function EditEmployeePage() {
           setBirthDate(undefined);
           setValue("birthDate", "", { shouldValidate: false });
         }
-      
+
+        // map จังหวัด/อำเภอ/ตำบล ให้ dropdown preselect
+        const province = provincesData.find(
+          (p) => normalizeThai(p.name_th) === normalizeThai(user.province)
+        );
+        if (province) setProvinceId(province.id);
+
+        let amphure: Amphure | undefined;
+        if (province) {
+          amphure = amphuresData.find(
+            (a) =>
+              a.province_id === province.id &&
+              normalizeThai(a.name_th) === normalizeThai(user.district)
+          );
+        }
+
+        const tambonFound = tambonsData.find(
+          (t) => normalizeThai(t.name_th) === normalizeThai(user.subdistrict)
+        );
+
+        if (!amphure && tambonFound) {
+          amphure = amphuresData.find((a) => a.id === tambonFound.amphure_id);
+        }
+
+        if (amphure) setAmphureId(amphure.id);
+        if (tambonFound) {
+          setTambonId(tambonFound.id);
+          // เติม zip ถ้าผู้ใช้ยังไม่มี
+          if (!user.postalCode && tambonFound.zip_code) {
+            reset((prev) => ({
+              ...prev,
+              postalCode: String(tambonFound.zip_code),
+            }));
+          }
+        } else {
+          setTambonId(undefined);
+        }
         if (user.startDate) {
           const d = new Date(user.startDate);
           setStartDate(d);
@@ -635,113 +603,61 @@ export default function EditEmployeePage() {
 
             {/* จังหวัด */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700">
                 จังหวัด
               </label>
-              <Select
-                value={provinceId ? String(provinceId) : ""}
-                onValueChange={(value) => {
-                  const id = Number(value);
-                  setProvinceId(id);
-
-                  const found = provinces.find((p) => p.id === id);
-                  setValue("province", found ? found.name_th : "", {
-                    shouldValidate: true,
-                  });
-
-                  // reset อำเภอ/ตำบล/รหัสไปรษณีย์
-                  setAmphureId(undefined);
-                  setTambonId(undefined);
-                  setValue("district", "");
-                  setValue("subdistrict", "");
-                  setValue("postalCode", "");
-                }}
+              <select
+                value={provinceId ?? ""}
+                onChange={handleProvinceChange}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
               >
-                <SelectTrigger className="w-full mt-1 border border-gray-300 rounded-md">
-                  <SelectValue placeholder="กรุณาเลือก" />
-                </SelectTrigger>
-                <SelectContent>
-                  {provinces.map((p) => (
-                    <SelectItem key={p.id} value={String(p.id)}>
-                      {p.name_th}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {/* เก็บชื่อจังหวัดลงฟอร์ม */}
-              <input type="hidden" {...register("province")} />
+                <option value="">กรุณาเลือก</option>
+                {provinces.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name_th}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* อำเภอ */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700">
                 อำเภอ
               </label>
-              <Select
-                value={amphureId ? String(amphureId) : ""}
-                onValueChange={(value) => {
-                  const id = Number(value);
-                  setAmphureId(id);
-                  setTambonId(undefined);
-
-                  const found = amphures.find((a) => a.id === id);
-                  setValue("district", found ? found.name_th : "", {
-                    shouldValidate: true,
-                  });
-
-                  // reset ตำบล/รหัสไปรษณีย์
-                  setValue("subdistrict", "");
-                  setValue("postalCode", "");
-                }}
+              <select
+                value={amphureId ?? ""}
+                onChange={handleAmphureChange}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
                 disabled={!provinceId}
               >
-                <SelectTrigger className="w-full mt-1 border border-gray-300 rounded-md">
-                  <SelectValue placeholder="กรุณาเลือก" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredAmphures.map((a) => (
-                    <SelectItem key={a.id} value={String(a.id)}>
-                      {a.name_th}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {/* เก็บชื่ออำเภอลงฟอร์ม */}
-              <input type="hidden" {...register("district")} />
+                <option value="">กรุณาเลือก</option>
+                {filteredAmphures.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name_th}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* ตำบล */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700">
                 ตำบล
               </label>
-              <Select
-                value={tambonId ? String(tambonId) : ""}
-                onValueChange={(value) => {
-                  const id = Number(value);
-                  setTambonId(id);
-
-                  const found = tambons.find((t) => t.id === id);
-                  setValue("subdistrict", found ? found.name_th : "", {
-                    shouldValidate: true,
-                  });
-                  if (found) setValue("postalCode", String(found.zip_code));
-                }}
+              <select
+                value={tambonId ?? ""}
+                onChange={handleTambonChange}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md bg-white"
                 disabled={!amphureId}
               >
-                <SelectTrigger className="w-full mt-1 border border-gray-300 rounded-md">
-                  <SelectValue placeholder="กรุณาเลือก" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredTambons.map((t) => (
-                    <SelectItem key={t.id} value={String(t.id)}>
-                      {t.name_th}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {/* เก็บชื่อตำบลลงฟอร์ม */}
-              <input type="hidden" {...register("subdistrict")} />
+                <option value="">กรุณาเลือก</option>
+                {filteredTambons.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name_th}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* รหัสไปรษณีย์ */}
@@ -758,18 +674,40 @@ export default function EditEmployeePage() {
 
             {/* ตำแหน่ง */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 ตำแหน่ง
               </label>
               <Input {...register("position")} />
             </div>
 
             {/* แผนก */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700">
                 แผนก
               </label>
               <Input {...register("department")} />
+            </div> */}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                แผนก *
+              </label>
+              <Controller
+                name="department"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="IT">ฝ่ายเทคโนโลยีสารสนเทศ</SelectItem>
+                      <SelectItem value="Sales">ฝ่ายขาย</SelectItem>
+                      <SelectItem value="Marketing ">ฝ่ายการตลาด</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             {/* วันที่เริ่มงาน */}
