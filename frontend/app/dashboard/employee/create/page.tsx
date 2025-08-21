@@ -185,19 +185,18 @@ export default function CreateEmployeePage() {
 
   return (
     <div className="bg-white w-full min-h-full rounded-2xl shadow-lg p-6 md:p-8">
-      <div className="flex items-center mb-8">
-        <button
-          onClick={() => router.back()}
-          className="p-2 rounded-full hover:bg-gray-100 mr-4"
-        >
-          <ArrowLeft size={24} />
-        </button>
-        <h1 className="text-3xl font-bold text-gray-800">เพิ่มพนักงาน</h1>
+      <div className="border-b pb-4 mb-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-4xl font-bold text-gray-800 mx-auto">
+            เพิ่มพนักงาน
+          </h1>
+          <div className="w-6" />{" "}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mb-8">
-          <div className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg mb-6">
+          <div className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg mb-6 text-xl">
             ข้อมูลพนักงาน
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
@@ -392,94 +391,7 @@ export default function CreateEmployeePage() {
               </label>
               <Input type="number" {...register("phone")} />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                อีเมล *
-              </label>
-              <Input
-                type="email"
-                {...register("email", {
-                  required: "กรุณากรอกอีเมล",
-                })}
-                className={cn(errors.email && "border-red-500")}
-              />
-              {errors.email && (
-                <p className="flex items-center mt-1 text-xs text-red-500">
-                  <AlertTriangle size={14} className="mr-1" />
-                  {errors.email.message as string}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                รหัสผ่าน *
-              </label>
 
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  {...register("password", {
-                    required: "กรุณากรอกรหัสผ่าน",
-                    minLength: {
-                      value: 6,
-                      message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
-                    },
-                  })}
-                  className={cn(
-                    errors.password && "border-red-500 pr-10" // เพิ่ม padding เผื่อ icon
-                  )}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-
-              {errors.password && (
-                <p className="flex items-center mt-1 text-xs text-red-500">
-                  <AlertTriangle size={14} className="mr-1" />
-                  {errors.password.message as string}
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                สิทธิ์การใช้งาน *
-              </label>
-              <Select
-                onValueChange={(value) =>
-                  setValue("roleId", value, { shouldValidate: true })
-                }
-              >
-                <SelectTrigger
-                  className={cn("w-full", errors.roleId && "border-red-500")}
-                >
-                  <SelectValue placeholder="กรุณาเลือก" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => (
-                    <SelectItem key={r.id} value={String(r.id)}>
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.roleId && (
-                <p className="flex items-center mt-1 text-xs text-red-500">
-                  <AlertTriangle size={14} className="mr-1" />
-                  {errors.roleId.message as string}
-                </p>
-              )}
-              <input
-                type="hidden"
-                {...register("roleId", {
-                  required: "กรุณาเลือกสิทธิ์การใช้งาน",
-                })}
-              />
-            </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700">
                 ที่อยู่
@@ -775,33 +687,11 @@ export default function CreateEmployeePage() {
                 </p>
               )}
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 รหัสหัวหน้าพนักงาน
               </label>
               <Input {...register("managerId")} />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                สถานะพนักงาน
-              </label>
-              <Select
-                onValueChange={(value) =>
-                  setValue("status", value, { shouldValidate: true })
-                }
-              >
-                <SelectTrigger
-                  className={cn("w-full", errors.status && "border-red-500")}
-                >
-                  <SelectValue placeholder="กรุณาเลือก" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -809,7 +699,6 @@ export default function CreateEmployeePage() {
               </label>
               <Input {...register("company")} />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 เขตรับผิดชอบ
@@ -829,7 +718,7 @@ export default function CreateEmployeePage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ภาคกลาง">ภาคกลาง</SelectItem>
-                  <SelectItem value="ภาคกลาง">ภาคกลาง</SelectItem>
+                  <SelectItem value="ภาคเหนือ">ภาคเหนือ</SelectItem>
                   <SelectItem value="ภาคตะวันออกเฉียงเหนือ">
                     ภาคตะวันออกเฉียงเหนือ
                   </SelectItem>
@@ -838,8 +727,131 @@ export default function CreateEmployeePage() {
               </Select>
             </div>
           </div>
+          <div className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg mb-6 text-xl mt-6">
+            ข้อมูลการเข้าสู่ระบบ
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                อีเมล *
+              </label>
+              <Input
+                type="email"
+                {...register("email", {
+                  required: "กรุณากรอกอีเมล",
+                })}
+                className={cn(errors.email && "border-red-500")}
+              />
+              {errors.email && (
+                <p className="flex items-center mt-1 text-xs text-red-500">
+                  <AlertTriangle size={14} className="mr-1" />
+                  {errors.email.message as string}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                รหัสผ่าน *
+              </label>
+
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  {...register("password", {
+                    required: "กรุณากรอกรหัสผ่าน",
+                    minLength: {
+                      value: 6,
+                      message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+                    },
+                  })}
+                  className={cn(
+                    errors.password && "border-red-500 pr-10" // เพิ่ม padding เผื่อ icon
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
+              {errors.password && (
+                <p className="flex items-center mt-1 text-xs text-red-500">
+                  <AlertTriangle size={14} className="mr-1" />
+                  {errors.password.message as string}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                สิทธิ์การใช้งาน *
+              </label>
+              <Select
+                onValueChange={(value) =>
+                  setValue("roleId", value, { shouldValidate: true })
+                }
+              >
+                <SelectTrigger
+                  className={cn("w-full", errors.roleId && "border-red-500")}
+                >
+                  <SelectValue placeholder="กรุณาเลือก" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((r) => (
+                    <SelectItem key={r.id} value={String(r.id)}>
+                      {r.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.roleId && (
+                <p className="flex items-center mt-1 text-xs text-red-500">
+                  <AlertTriangle size={14} className="mr-1" />
+                  {errors.roleId.message as string}
+                </p>
+              )}
+              <input
+                type="hidden"
+                {...register("roleId", {
+                  required: "กรุณาเลือกสิทธิ์การใช้งาน",
+                })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                สถานะ
+              </label>
+              <Select
+                defaultValue="Active"
+                onValueChange={(value) =>
+                  setValue("status", value, { shouldValidate: true })
+                }
+              >
+                <SelectTrigger
+                  className={cn("w-full", errors.status && "border-red-500")}
+                >
+                  <SelectValue placeholder="กรุณาเลือก" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center space-x-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="bg-gray-300 text-gray-800 font-bold py-2 px-8 rounded-lg hover:bg-gray-400"
+          >
+            ย้อนกลับ
+          </button>
           <button
             type="submit"
             disabled={isSubmitting}

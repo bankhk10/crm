@@ -44,7 +44,7 @@ const navItems = [
     icon: Users,
     children: [
       { href: "/dashboard/customers/list", label: "รายชื่อลูกค้า" },
-      { href: "/dashboard/customers/create", label: "สร้างลูกค้าใหม่" },
+      // { href: "/dashboard/customers/create", label: "สร้างลูกค้าใหม่" },
     ],
   },
   { href: "/dashboard/employee", label: "พนักงาน", icon: UserCog },
