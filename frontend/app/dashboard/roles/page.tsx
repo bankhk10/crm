@@ -351,11 +351,11 @@ export default function AdminRolesPage() {
 
       {/* breadcrumb-ish */}
       <nav className="mb-4 flex flex-wrap items-center gap-3 text-sm">
-        <Link href="/admin/users" className="text-blue-600 hover:underline">Users</Link>
+        {/* <Link href="/admin/users" className="text-blue-600 hover:underline">Users</Link> */}
         <Separator orientation="vertical" className="h-4" />
-        <Link href="/admin/roles" className="font-medium text-gray-900">Roles</Link>
+        <Link href="/dashboard/roles" className="font-medium text-gray-900">Roles</Link>
         <Separator orientation="vertical" className="h-4" />
-        <Link href="/admin/permissions" className="text-blue-600 hover:underline">Permissions</Link>
+        <Link href="/dashboard/permissions" className="text-blue-600 hover:underline">Permissions</Link>
       </nav>
 
       <Card className="w-full rounded-2xl shadow-lg">

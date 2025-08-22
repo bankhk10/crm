@@ -301,15 +301,15 @@ export default function AdminPermissionsPage() {
 
       {/* Breadcrumb-ish nav */}
       <nav className="mb-4 flex flex-wrap items-center gap-3 text-sm">
-        <Link href="/admin/users" className="text-blue-600 hover:underline">
+        {/* <Link href="/admin/users" className="text-blue-600 hover:underline">
           Users
-        </Link>
+        </Link> */}
         <Separator orientation="vertical" className="h-4" />
-        <Link href="/admin/roles" className="text-blue-600 hover:underline">
+        <Link href="/dashboard/roles" className="text-blue-600 hover:underline">
           Roles
         </Link>
         <Separator orientation="vertical" className="h-4" />
-        <Link href="/admin/permissions" className="font-medium text-gray-900">
+        <Link href="/dashboard/permissions" className="font-medium text-gray-900">
           Permissions
         </Link>
       </nav>

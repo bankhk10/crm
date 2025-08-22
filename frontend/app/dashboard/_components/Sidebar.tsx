@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
-
 // --- Data structure for navigation items ---
 const navItems = [
   { href: "/dashboard", label: "รายงาน", icon: BarChart2 },
@@ -48,8 +47,8 @@ const navItems = [
     ],
   },
   { href: "/dashboard/employee", label: "พนักงาน", icon: UserCog },
-  { href: "/admin/permissions", label: "สิทธิ์", icon: Shield },
-
+  { href: "/dashboard/roles", label: "สิทธิ์", icon: Shield },
+  // { href: "/admin/roles", label: "สิทธิ์", icon: Shield },
 ];
 
 // Restrict menu visibility based on role
@@ -66,7 +65,7 @@ const Logo = () => (
   <div className="bg-red-650 p-4 flex items-center justify-center mb-6 mr-5 mt-4">
     <div className="relative w-36 h-36 rounded-lg overflow-hidden p-2">
       <Image
-        src="/images/logo.jpg" 
+        src="/images/logo.jpg"
         alt="Logo"
         fill
         className="object-contain"
