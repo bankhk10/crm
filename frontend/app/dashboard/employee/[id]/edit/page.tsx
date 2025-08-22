@@ -213,14 +213,10 @@ export default function EditEmployeePage() {
                 รหัสพนักงาน *
               </label>
               <Input
-                readOnly
                 {...register("employeeId", {
                   required: "กรุณากรอกรหัสพนักงาน",
                 })}
-                className={cn(
-                  "bg-gray-100 text-gray-700 cursor-not-allowed",
-                  errors.employeeId && "border-red-500"
-                )}
+                className={cn(errors.employeeId && "border-red-500")}
               />
               {errors.employeeId && (
                 <p className="flex items-center mt-1 text-xs text-red-500">
@@ -669,10 +665,15 @@ export default function EditEmployeePage() {
               </label>
               <Input
                 type="email"
-                readOnly
                 {...register("email", { required: "กรุณากรอกอีเมล" })}
-                className={cn("bg-gray-100 text-gray-700 cursor-not-allowed")}
+                className={cn(errors.email && "border-red-500")}
               />
+              {errors.email && (
+                <p className="flex items-center mt-1 text-xs text-red-500">
+                  <AlertTriangle size={14} className="mr-1" />
+                  {errors.email.message as string}
+                </p>
+              )}
             </div>
 
             {/* รหัสผ่านใหม่ */}

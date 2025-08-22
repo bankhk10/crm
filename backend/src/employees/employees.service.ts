@@ -77,8 +77,32 @@ export class EmployeesService {
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
-    const { password, firstName, lastName, ...rest } = updateEmployeeDto;
+    const { employeeId, email, password, firstName, lastName, ...rest } =
+      updateEmployeeDto;
     const data: any = { ...rest };
+
+    if (employeeId && employeeId !== id) {
+      const existEmpId = await this.prisma.user.findUnique({
+        where: { employeeId },
+      });
+      if (existEmpId) {
+        throw new BadRequestException(
+          `รหัสพนักงาน ${employeeId} ถูกใช้งานแล้ว`,
+        );
+      }
+      data.employeeId = employeeId;
+    }
+
+    if (email) {
+      const existEmail = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      if (existEmail && existEmail.employeeId !== id) {
+        throw new BadRequestException(`อีเมล ${email} ถูกใช้งานแล้ว`);
+      }
+      data.email = email;
+    }
+
     if (password) {
       data.password = await bcrypt.hash(password, 10);
     }
