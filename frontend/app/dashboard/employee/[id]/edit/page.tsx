@@ -194,7 +194,7 @@ export default function EditEmployeePage() {
       <div className="border-b pb-4 mb-8">
         <div className="flex items-center justify-between">
           <h1 className="text-4xl font-bold text-gray-800 mx-auto">
-            แก้ไขพนักงาน
+            แก้ไขข้อมูลพนักงาน
           </h1>
           <div className="w-6" />
         </div>
@@ -411,76 +411,6 @@ export default function EditEmployeePage() {
               <Input {...register("phone")} />
             </div>
 
-            {/* อีเมล */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                อีเมล *
-              </label>
-              <Input
-                type="email"
-                readOnly
-                {...register("email", { required: "กรุณากรอกอีเมล" })}
-                className={cn("bg-gray-100 text-gray-700 cursor-not-allowed")}
-              />
-            </div>
-
-            {/* รหัสผ่านใหม่ */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                รหัสผ่านใหม่
-              </label>
-              <Input
-                type="password"
-                {...register("password", { minLength: 6 })}
-              />
-            </div>
-
-            {/* สิทธิ์การใช้งาน */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                สิทธิ์การใช้งาน *
-              </label>
-
-              <Controller
-                name="roleId"
-                control={control}
-                rules={{ required: "กรุณาเลือกสิทธิ์การใช้งาน" }}
-                render={({ field }) => (
-                  <Select
-                    // รี-mount เมื่อ roles มา หรือค่า roleId เปลี่ยน เพื่อให้ sync กับรายการ
-                    key={`${roles.length}-${field.value ?? ""}`}
-                    value={field.value ?? undefined} // ใช้ nullish เพื่อไม่ทับค่า "0"
-                    defaultValue={field.value ?? undefined} // เผื่อ first paint
-                    onValueChange={field.onChange}
-                    disabled={roles.length === 0} // กันคลิกระหว่างกำลังโหลด
-                  >
-                    <SelectTrigger
-                      className={cn(
-                        "w-full",
-                        errors.roleId && "border-red-500"
-                      )}
-                    >
-                      <SelectValue placeholder="กรุณาเลือก" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles.map((r) => (
-                        <SelectItem key={r.id} value={String(r.id)}>
-                          {r.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-
-              {errors.roleId && (
-                <p className="flex items-center mt-1 text-xs text-red-500">
-                  <AlertTriangle size={14} className="mr-1" />
-                  {errors.roleId.message as string}
-                </p>
-              )}
-            </div>
-
             {/* ที่อยู่ */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700">
@@ -674,28 +604,6 @@ export default function EditEmployeePage() {
               <Input {...register("managerId")} />
             </div>
 
-            {/* สถานะพนักงาน */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                สถานะพนักงาน
-              </label>
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="กรุณาเลือก" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-
             {/* บริษัท */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -745,6 +653,105 @@ export default function EditEmployeePage() {
                   {errors.responsibleArea.message as string}
                 </p>
               )}
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <div className="bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-lg mb-6 text-xl">
+            ข้อมูลการเข้าสู่ระบบ
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            {/* อีเมล */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                อีเมล *
+              </label>
+              <Input
+                type="email"
+                readOnly
+                {...register("email", { required: "กรุณากรอกอีเมล" })}
+                className={cn("bg-gray-100 text-gray-700 cursor-not-allowed")}
+              />
+            </div>
+
+            {/* รหัสผ่านใหม่ */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                รหัสผ่านใหม่
+              </label>
+              <Input
+                type="password"
+                {...register("password", { minLength: 6 })}
+              />
+            </div>
+
+            {/* สิทธิ์การใช้งาน */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                สิทธิ์การใช้งาน *
+              </label>
+
+              <Controller
+                name="roleId"
+                control={control}
+                rules={{ required: "กรุณาเลือกสิทธิ์การใช้งาน" }}
+                render={({ field }) => (
+                  <Select
+                    // รี-mount เมื่อ roles มา หรือค่า roleId เปลี่ยน เพื่อให้ sync กับรายการ
+                    key={`${roles.length}-${field.value ?? ""}`}
+                    value={field.value ?? undefined} // ใช้ nullish เพื่อไม่ทับค่า "0"
+                    defaultValue={field.value ?? undefined} // เผื่อ first paint
+                    onValueChange={field.onChange}
+                    disabled={roles.length === 0} // กันคลิกระหว่างกำลังโหลด
+                  >
+                    <SelectTrigger
+                      className={cn(
+                        "w-full",
+                        errors.roleId && "border-red-500"
+                      )}
+                    >
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((r) => (
+                        <SelectItem key={r.id} value={String(r.id)}>
+                          {r.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              {errors.roleId && (
+                <p className="flex items-center mt-1 text-xs text-red-500">
+                  <AlertTriangle size={14} className="mr-1" />
+                  {errors.roleId.message as string}
+                </p>
+              )}
+            </div>
+
+            {/* สถานะพนักงาน */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                สถานะพนักงาน
+              </label>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="กรุณาเลือก" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
           </div>
         </div>
