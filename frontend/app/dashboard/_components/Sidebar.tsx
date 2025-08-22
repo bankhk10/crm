@@ -164,8 +164,8 @@ export default function Sidebar({
 
   const filteredNavItems = navItems.filter((item) => {
     const roleName = user?.role.name;
-
-    if (item.href.startsWith("/admin")) {
+    
+    if (item.href.startsWith("/dashboard/roles")) {
       return roleName === "ADMIN" || roleName === "CEO";
     }
 
