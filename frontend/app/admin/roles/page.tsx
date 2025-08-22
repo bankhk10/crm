@@ -1,13 +1,47 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import api from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { toast } from 'sonner';
-import { PlusCircle, Trash2, Edit, X, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
+
+import {
+  PlusCircle,
+  Trash2,
+  Edit,
+  Shield,
+  Search,
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Permission {
   id: number;
@@ -21,31 +55,30 @@ interface Role {
   permissions: Permission[];
 }
 
-// Values submitted to the API
+// submitted to API
 type RoleFormInputs = { name: string; permissionIds: number[] };
-// Values used within the form (checkbox values are strings)
+// used in form
 type RoleFormData = { name: string; permissionIds: string[] };
 
-const RoleModal = ({
-  isOpen,
-  onClose,
-  onSubmit,
+function RoleDialog({
+  open,
+  onOpenChange,
+  mode,
   permissions,
   defaultValues,
-  title,
-  submitLabel,
+  onSubmit,
 }: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: RoleFormInputs) => Promise<void>;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  mode: 'add' | 'edit';
   permissions: Permission[];
-  defaultValues?: RoleFormData;
-  title: string;
-  submitLabel: string;
-}) => {
+  defaultValues: RoleFormData;
+  onSubmit: (data: RoleFormInputs) => Promise<void>;
+}) {
   const {
     register,
     handleSubmit,
+    control,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<RoleFormData>({ defaultValues });
@@ -54,277 +87,399 @@ const RoleModal = ({
     reset(defaultValues);
   }, [defaultValues, reset]);
 
-  if (!isOpen) return null;
-
-  const handleFormSubmit: SubmitHandler<RoleFormData> = async (data) => {
-    const ids = Array.isArray(data.permissionIds)
-      ? data.permissionIds
-      : [data.permissionIds];
-    await onSubmit({
-      name: data.name,
-      permissionIds: ids.map(Number),
-    });
-    reset({ name: '', permissionIds: [] });
+  const submit: SubmitHandler<RoleFormData> = async (data) => {
+    const ids = (data.permissionIds ?? []).map((x) => Number(x));
+    await onSubmit({ name: data.name.trim(), permissionIds: ids });
+    onOpenChange(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">{title}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800"><X size={24} /></button>
-        </div>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Name</label>
-            <input
-              {...register('name', { required: 'Name is required' })}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            {errors.name && <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
-            <div className="max-h-48 overflow-y-auto border p-2 rounded-md">
-              {permissions.map((p) => (
-                <label key={p.id} className="flex items-center space-x-2 mb-1">
-                  <input
-                    type="checkbox"
-                    value={String(p.id)}
-                    {...register('permissionIds', {
-                      required: 'Select at least one permission',
-                    })}
-                  />
-                  <span>{p.action} {p.subject}</span>
-                </label>
-              ))}
-            </div>
-            {errors.permissionIds && <p className="text-sm text-red-600 mt-1">{errors.permissionIds.message as string}</p>}
-          </div>
-          <div className="flex justify-end pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md mr-2 hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
-            >
-              {isSubmitting ? 'Saving...' : submitLabel}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            {mode === 'add' ? 'Add Role' : 'Edit Role'}
+          </DialogTitle>
+          <DialogDescription>Set a role name and choose permissions.</DialogDescription>
+        </DialogHeader>
 
-const DeleteRoleModal = ({
+        <form onSubmit={handleSubmit(submit)} className="space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="roleName">Name</Label>
+            <Input
+              id="roleName"
+              placeholder="e.g. ADMIN, MANAGER, STAFF"
+              {...register('name', { required: 'Name is required' })}
+            />
+            {errors.name && (
+              <p className="text-xs text-red-600">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Permissions</Label>
+            <div className="max-h-56 overflow-auto rounded-md border p-2">
+              <Controller
+                name="permissionIds"
+                control={control}
+                rules={{
+                  validate: (v) =>
+                    (v && v.length > 0) || 'Select at least one permission',
+                }}
+                render={({ field }) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {permissions.map((p) => {
+                      const val = String(p.id);
+                      const checked = field.value?.includes(val) ?? false;
+                      return (
+                        <label
+                          key={p.id}
+                          className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-gray-50"
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => {
+                              if (v) {
+                                field.onChange([...(field.value ?? []), val]);
+                              } else {
+                                field.onChange((field.value ?? []).filter((x) => x !== val));
+                              }
+                            }}
+                          />
+                          <span className="text-sm">
+                            <span className="font-medium">{p.action}</span>{' '}
+                            <span className="text-gray-600">{p.subject}</span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              />
+            </div>
+            {errors.permissionIds && (
+              <p className="text-xs text-red-600">
+                {String(errors.permissionIds.message)}
+              </p>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving…' : mode === 'add' ? 'Create' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DeleteRoleDialog({
+  open,
+  onOpenChange,
   role,
-  isOpen,
-  onClose,
   onConfirm,
 }: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
   role: Role | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-}) => {
-  if (!isOpen || !role) return null;
+  onConfirm: () => Promise<void>;
+}) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex items-start">
-          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-            <AlertTriangle className="h-6 w-6 text-red-600" />
-          </div>
-          <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Delete Role</h3>
-            <div className="mt-2">
-              <p className="text-sm text-gray-500">
-                Are you sure you want to delete <strong>{role.name}</strong>? This action cannot be undone.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-          <button
-            onClick={onConfirm}
-            type="button"
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Role</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete <strong>{role?.name}</strong>? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-red-600 hover:bg-red-700"
+            onClick={async () => {
+              await onConfirm();
+              onOpenChange(false);
+            }}
           >
             Delete
-          </button>
-          <button
-            onClick={onClose}
-            type="button"
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
-};
+}
 
 export default function AdminRolesPage() {
-  const [roles, setRoles] = useState<Role[]>([]);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
+
+  const [query, setQuery] = useState('');
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
+  const [editing, setEditing] = useState<Role | null>(null);
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState<Role | null>(null);
+
   const fetchData = async () => {
     try {
+      setLoadingList(true);
       const [rolesRes, permsRes] = await Promise.all([
         api.get('/roles'),
         api.get('/permissions'),
       ]);
-      setRoles(rolesRes.data);
-      setPermissions(permsRes.data);
+      setRoles(rolesRes.data ?? []);
+      setPermissions(permsRes.data ?? []);
     } catch {
       toast.error('Failed to fetch roles or permissions.');
+    } finally {
+      setLoadingList(false);
     }
   };
 
   useEffect(() => {
-    if (!isLoading && user?.role.name !== 'ADMIN') {
+    if (!isLoading && user?.role?.name !== 'ADMIN') {
       toast.error("Access Denied: You don't have permission to view this page.");
       router.push('/dashboard');
       return;
     }
-    if (user?.role.name === 'ADMIN') {
+    if (user?.role?.name === 'ADMIN') {
       fetchData();
     }
-  }, [user, isLoading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isLoading]);
 
-  const openAddModal = () => {
-    setModalMode('add');
-    setSelectedRole(null);
-    setIsModalOpen(true);
+  const filtered = useMemo(() => {
+    if (!query.trim()) return roles;
+    const q = query.toLowerCase();
+    return roles.filter((r) => {
+      const perms = r.permissions.map((p) => `${p.action} ${p.subject}`).join(' ').toLowerCase();
+      return r.name.toLowerCase().includes(q) || perms.includes(q);
+    });
+  }, [roles, query]);
+
+  const openAdd = () => {
+    setDialogMode('add');
+    setEditing(null);
+    setDialogOpen(true);
   };
 
-  const openEditModal = (role: Role) => {
-    setModalMode('edit');
-    setSelectedRole(role);
-    setIsModalOpen(true);
+  const openEdit = (r: Role) => {
+    setDialogMode('edit');
+    setEditing(r);
+    setDialogOpen(true);
   };
 
-  const handleAddOrUpdate = async (data: RoleFormInputs) => {
+  const saveRole = async (data: RoleFormInputs) => {
     try {
-      if (modalMode === 'add') {
+      if (dialogMode === 'add') {
         await api.post('/roles', data);
         toast.success('Role created successfully!');
-      } else if (selectedRole) {
-        await api.patch(`/roles/${selectedRole.id}`, data);
+      } else if (editing) {
+        await api.patch(`/roles/${editing.id}`, data);
         toast.success('Role updated successfully!');
       }
-      setIsModalOpen(false);
-      fetchData();
+      await fetchData();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to save role.');
+      toast.error(error?.response?.data?.message || 'Failed to save role.');
+      throw error;
     }
   };
 
-  const handleDelete = (role: Role) => {
-    setSelectedRole(role);
-    setIsDeleteModalOpen(true);
+  const confirmDelete = (r: Role) => {
+    setDeleting(r);
+    setDeleteOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!selectedRole) return;
+  const doDelete = async () => {
+    if (!deleting) return;
     try {
-      await api.delete(`/roles/${selectedRole.id}`);
+      await api.delete(`/roles/${deleting.id}`);
       toast.success('Role deleted successfully.');
-      fetchData();
-      setIsDeleteModalOpen(false);
-      setSelectedRole(null);
+      await fetchData();
+      setDeleting(null);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to delete role.');
+      toast.error(error?.response?.data?.message || 'Failed to delete role.');
+      throw error;
     }
   };
 
-  if (isLoading || !user || user.role.name !== 'ADMIN') {
-    return <div className="flex items-center justify-center h-screen">Checking permissions...</div>;
+  if (isLoading || !user || user.role?.name !== 'ADMIN') {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="animate-pulse text-sm text-gray-500">Checking permissions…</div>
+      </div>
+    );
   }
 
   return (
-    <>
-      <RoleModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddOrUpdate}
+    <TooltipProvider delayDuration={150}>
+      {/* dialogs */}
+      <RoleDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        mode={dialogMode}
         permissions={permissions}
         defaultValues={
-          modalMode === 'edit' && selectedRole
+          dialogMode === 'edit' && editing
             ? {
-                name: selectedRole.name,
-                permissionIds: selectedRole.permissions.map((p) => String(p.id)),
+                name: editing.name,
+                permissionIds: editing.permissions.map((p) => String(p.id)),
               }
             : { name: '', permissionIds: [] }
         }
-        title={modalMode === 'add' ? 'Add Role' : 'Edit Role'}
-        submitLabel={modalMode === 'add' ? 'Create' : 'Save'}
+        onSubmit={saveRole}
       />
-      <DeleteRoleModal
-        role={selectedRole}
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
+      <DeleteRoleDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        role={deleting}
+        onConfirm={doDelete}
       />
 
-      <nav className="mb-4 space-x-4">
+      {/* breadcrumb-ish */}
+      <nav className="mb-4 flex flex-wrap items-center gap-3 text-sm">
         <Link href="/admin/users" className="text-blue-600 hover:underline">Users</Link>
-        <Link href="/admin/roles" className="text-blue-600 hover:underline">Roles</Link>
+        <Separator orientation="vertical" className="h-4" />
+        <Link href="/admin/roles" className="font-medium text-gray-900">Roles</Link>
+        <Separator orientation="vertical" className="h-4" />
         <Link href="/admin/permissions" className="text-blue-600 hover:underline">Permissions</Link>
       </nav>
 
-      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full min-h-full">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold mb-4 md:mb-0">Roles</h1>
-          <button
-            onClick={openAddModal}
-            className="w-full md:w-auto flex items-center justify-center bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 font-semibold"
-          >
-            <PlusCircle className="w-5 h-5 mr-2" />
-            Add Role
-          </button>
-        </div>
+      <Card className="w-full rounded-2xl shadow-lg">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Roles
+              </CardTitle>
+              <CardDescription>Group permissions into roles.</CardDescription>
+            </div>
 
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissions</th>
-              <th className="px-6 py-3" />
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {roles.map((r) => (
-              <tr key={r.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{r.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {r.permissions.map((p) => `${p.action} ${p.subject}`).join(', ')}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                  <button onClick={() => openEditModal(r)} className="text-indigo-600 hover:text-indigo-900"><Edit size={16} /></button>
-                  <button onClick={() => handleDelete(r)} className="text-red-600 hover:text-red-900"><Trash2 size={16} /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
+            <div className="flex w-full gap-2 md:w-auto">
+              <div className="relative w-full md:w-[280px]">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search role or permission…"
+                  className="pl-9"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+              <Button onClick={openAdd} className="whitespace-nowrap">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Role
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-0">
+          <div className="overflow-hidden rounded-xl border">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 font-medium text-gray-600">Name</th>
+                  <th className="px-6 py-3 font-medium text-gray-600">Permissions</th>
+                  <th className="px-6 py-3 text-right font-medium text-gray-600">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {loadingList ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="px-6 py-4">
+                        <div className="h-4 w-28 animate-pulse rounded bg-gray-200" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          {Array.from({ length: 3 }).map((__, j) => (
+                            <div key={j} className="h-5 w-20 animate-pulse rounded bg-gray-200" />
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="ml-auto h-4 w-16 animate-pulse rounded bg-gray-200" />
+                      </td>
+                    </tr>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <tr className="border-t">
+                    <td className="px-6 py-16 text-center text-sm text-gray-500" colSpan={3}>
+                      <div className="mx-auto mb-2 h-10 w-10 rounded-full bg-gray-100 p-2">
+                        <Search />
+                      </div>
+                      No roles found.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((r) => (
+                    <tr key={r.id} className="border-t hover:bg-gray-50/60">
+                      <td className="px-6 py-4">
+                        <span className="font-medium text-gray-800">{r.name}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          {r.permissions.map((p) => (
+                            <Badge key={p.id} variant="secondary" className="rounded-full px-3 py-1">
+                              {p.action} {p.subject}
+                            </Badge>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openEdit(r)}
+                                aria-label="Edit"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-red-600 hover:text-red-700"
+                                onClick={() => confirmDelete(r)}
+                                aria-label="Delete"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 }
-

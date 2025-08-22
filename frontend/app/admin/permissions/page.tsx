@@ -1,13 +1,47 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import api from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { toast } from 'sonner';
-import { PlusCircle, Trash2, Edit, X, AlertTriangle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import api from '@/lib/api';
+
+import {
+  PlusCircle,
+  Trash2,
+  Edit,
+  ShieldCheck,
+  Search,
+  AlertTriangle,
+} from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface Permission {
   id: number;
@@ -17,21 +51,19 @@ interface Permission {
 
 type PermissionFormInputs = { action: string; subject: string };
 
-const PermissionModal = ({
-  isOpen,
-  onClose,
-  onSubmit,
+function PermissionDialog({
+  open,
+  onOpenChange,
+  mode,
   defaultValues,
-  title,
-  submitLabel,
+  onSubmit,
 }: {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: PermissionFormInputs) => Promise<void>;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  mode: 'add' | 'edit';
   defaultValues: PermissionFormInputs;
-  title: string;
-  submitLabel: string;
-}) => {
+  onSubmit: (data: PermissionFormInputs) => Promise<void>;
+}) {
   const {
     register,
     handleSubmit,
@@ -43,274 +75,359 @@ const PermissionModal = ({
     reset(defaultValues);
   }, [defaultValues, reset]);
 
-  if (!isOpen) return null;
-
-  const handleFormSubmit: SubmitHandler<PermissionFormInputs> = async (data) => {
-    await onSubmit(data);
-    reset();
+  const submit: SubmitHandler<PermissionFormInputs> = async (data) => {
+    await onSubmit({ action: data.action.trim(), subject: data.subject.trim() });
+    onOpenChange(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">{title}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
-            <X size={24} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Action</label>
-            <input
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5" />
+            {mode === 'add' ? 'Add Permission' : 'Edit Permission'}
+          </DialogTitle>
+          <DialogDescription>
+            Define what an action can do on a target subject (e.g. <code>read</code> on <code>user</code>).
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit(submit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="action">Action</Label>
+            <Input
+              id="action"
+              placeholder="e.g. read, create, update, delete"
               {...register('action', { required: 'Action is required' })}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
-            {errors.action && <p className="text-sm text-red-600 mt-1">{errors.action.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Subject</label>
-            <input
-              {...register('subject', { required: 'Subject is required' })}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            {errors.subject && (
-              <p className="text-sm text-red-600 mt-1">{errors.subject.message}</p>
+            {errors.action && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {errors.action.message}
+              </p>
             )}
           </div>
-          <div className="flex justify-end pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md mr-2 hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
-            >
-              {isSubmitting ? 'Saving...' : submitLabel}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
 
-const DeleteConfirmationModal = ({
-  permission,
-  isOpen,
-  onClose,
-  onConfirmDelete,
-}: {
-  permission: Permission | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirmDelete: () => void;
-}) => {
-  if (!isOpen || !permission) return null;
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <div className="flex items-start">
-          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-            <AlertTriangle className="h-6 w-6 text-red-600" />
-          </div>
-          <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Delete Permission</h3>
-            <div className="mt-2">
-              <p className="text-sm text-gray-500">
-                Are you sure you want to delete <strong>{permission.action}</strong> on{' '}
-                <strong>{permission.subject}</strong>? This action cannot be undone.
+          <div className="space-y-2">
+            <Label htmlFor="subject">Subject</Label>
+            <Input
+              id="subject"
+              placeholder="e.g. user, role, invoice"
+              {...register('subject', { required: 'Subject is required' })}
+            />
+            {errors.subject && (
+              <p className="text-xs text-red-600 flex items-center gap-1">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                {errors.subject.message}
               </p>
-            </div>
+            )}
           </div>
-        </div>
-        <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-          <button
-            onClick={onConfirmDelete}
-            type="button"
-            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm"
+
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : mode === 'add' ? 'Create' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DeletePermissionDialog({
+  open,
+  onOpenChange,
+  permission,
+  onConfirm,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  permission: Permission | null;
+  onConfirm: () => Promise<void>;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Permission</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to delete{' '}
+            <strong>{permission?.action}</strong> on <strong>{permission?.subject}</strong>? This
+            action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-red-600 hover:bg-red-700"
+            onClick={async () => {
+              await onConfirm();
+              onOpenChange(false);
+            }}
           >
             Delete
-          </button>
-          <button
-            onClick={onClose}
-            type="button"
-            className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
-};
+}
 
 export default function AdminPermissionsPage() {
-  const [permissions, setPermissions] = useState<Permission[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
-  const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
+
+  const [query, setQuery] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<'add' | 'edit'>('add');
+  const [editing, setEditing] = useState<Permission | null>(null);
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState<Permission | null>(null);
+
   const fetchPermissions = async () => {
     try {
+      setLoadingList(true);
       const res = await api.get('/permissions');
-      setPermissions(res.data);
+      setPermissions(res.data ?? []);
     } catch {
       toast.error('Failed to fetch permissions.');
+    } finally {
+      setLoadingList(false);
     }
   };
 
   useEffect(() => {
-    if (!isLoading && user?.role.name !== 'ADMIN') {
+    if (!isLoading && user?.role?.name !== 'ADMIN') {
       toast.error("Access Denied: You don't have permission to view this page.");
       router.push('/dashboard');
       return;
     }
-    if (user?.role.name === 'ADMIN') {
+    if (user?.role?.name === 'ADMIN') {
       fetchPermissions();
     }
-  }, [user, isLoading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isLoading]);
 
-  const openAddModal = () => {
-    setModalMode('add');
-    setSelectedPermission(null);
-    setIsModalOpen(true);
+  const filtered = useMemo(() => {
+    if (!query.trim()) return permissions;
+    const q = query.toLowerCase();
+    return permissions.filter(
+      (p) => p.action.toLowerCase().includes(q) || p.subject.toLowerCase().includes(q),
+    );
+  }, [permissions, query]);
+
+  const openAdd = () => {
+    setDialogMode('add');
+    setEditing(null);
+    setDialogOpen(true);
   };
 
-  const openEditModal = (permission: Permission) => {
-    setModalMode('edit');
-    setSelectedPermission(permission);
-    setIsModalOpen(true);
+  const openEdit = (p: Permission) => {
+    setDialogMode('edit');
+    setEditing(p);
+    setDialogOpen(true);
   };
 
-  const handleAddOrUpdate = async (data: PermissionFormInputs) => {
+  const savePermission = async (data: PermissionFormInputs) => {
     try {
-      if (modalMode === 'add') {
+      if (dialogMode === 'add') {
         await api.post('/permissions', data);
         toast.success('Permission created successfully!');
-      } else if (selectedPermission) {
-        await api.patch(`/permissions/${selectedPermission.id}`, data);
+      } else if (editing) {
+        await api.patch(`/permissions/${editing.id}`, data);
         toast.success('Permission updated successfully!');
       }
-      setIsModalOpen(false);
-      fetchPermissions();
+      await fetchPermissions();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to save permission.');
+      toast.error(error?.response?.data?.message || 'Failed to save permission.');
+      throw error;
     }
   };
 
-  const handleDelete = (permission: Permission) => {
-    setSelectedPermission(permission);
-    setIsDeleteModalOpen(true);
+  const confirmDelete = (p: Permission) => {
+    setDeleting(p);
+    setDeleteOpen(true);
   };
 
-  const handleConfirmDelete = async () => {
-    if (!selectedPermission) return;
+  const doDelete = async () => {
+    if (!deleting) return;
     try {
-      await api.delete(`/permissions/${selectedPermission.id}`);
+      await api.delete(`/permissions/${deleting.id}`);
       toast.success('Permission deleted successfully.');
-      fetchPermissions();
-      setIsDeleteModalOpen(false);
-      setSelectedPermission(null);
+      await fetchPermissions();
+      setDeleting(null);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to delete permission.');
+      toast.error(error?.response?.data?.message || 'Failed to delete permission.');
+      throw error;
     }
   };
 
-  if (isLoading || !user || user.role.name !== 'ADMIN') {
-    return <div className="flex items-center justify-center h-screen">Checking permissions...</div>;
+  if (isLoading || !user || user.role?.name !== 'ADMIN') {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="animate-pulse text-sm text-gray-500">Checking permissions…</div>
+      </div>
+    );
   }
 
   return (
-    <>
-      <PermissionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleAddOrUpdate}
-        defaultValues=
-          {modalMode === 'edit' && selectedPermission
-            ? { action: selectedPermission.action, subject: selectedPermission.subject }
-            : { action: '', subject: '' }}
-        title={modalMode === 'add' ? 'Add Permission' : 'Edit Permission'}
-        submitLabel={modalMode === 'add' ? 'Create' : 'Save'}
+    <TooltipProvider delayDuration={150}>
+      {/* Dialogs */}
+      <PermissionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        mode={dialogMode}
+        defaultValues={
+          dialogMode === 'edit' && editing
+            ? { action: editing.action, subject: editing.subject }
+            : { action: '', subject: '' }
+        }
+        onSubmit={savePermission}
       />
-      <DeleteConfirmationModal
-        permission={selectedPermission}
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirmDelete={handleConfirmDelete}
+      <DeletePermissionDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        permission={deleting}
+        onConfirm={doDelete}
       />
 
-      <nav className="mb-4 space-x-4">
+      {/* Breadcrumb-ish nav */}
+      <nav className="mb-4 flex flex-wrap items-center gap-3 text-sm">
         <Link href="/admin/users" className="text-blue-600 hover:underline">
           Users
         </Link>
+        <Separator orientation="vertical" className="h-4" />
         <Link href="/admin/roles" className="text-blue-600 hover:underline">
           Roles
         </Link>
-        <Link href="/admin/permissions" className="text-blue-600 hover:underline">
+        <Separator orientation="vertical" className="h-4" />
+        <Link href="/admin/permissions" className="font-medium text-gray-900">
           Permissions
         </Link>
       </nav>
 
-      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full min-h-full">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold mb-4 md:mb-0">Permissions</h1>
-          <button
-            onClick={openAddModal}
-            className="w-full md:w-auto flex items-center justify-center bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 font-semibold"
-          >
-            <PlusCircle className="w-5 h-5 mr-2" />
-            Add Permission
-          </button>
-        </div>
+      <Card className="w-full rounded-2xl shadow-lg">
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5" />
+                Permissions
+              </CardTitle>
+              <CardDescription>Manage what actions are allowed on which subjects.</CardDescription>
+            </div>
 
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Action
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Subject
-              </th>
-              <th className="px-6 py-3" />
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {permissions.map((p) => (
-              <tr key={p.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{p.action}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{p.subject}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                  <button
-                    onClick={() => openEditModal(p)}
-                    className="text-indigo-600 hover:text-indigo-900"
-                  >
-                    <Edit size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(p)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
+            <div className="flex w-full gap-2 md:w-auto">
+              <div className="relative w-full md:w-[280px]">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Input
+                  placeholder="Search action or subject…"
+                  className="pl-9"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+              <Button onClick={openAdd} className="whitespace-nowrap">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Permission
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-0">
+          <div className="overflow-hidden rounded-xl border">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 font-medium text-gray-600">Action</th>
+                  <th className="px-6 py-3 font-medium text-gray-600">Subject</th>
+                  <th className="px-6 py-3 text-right font-medium text-gray-600">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {loadingList ? (
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="px-6 py-4">
+                        <div className="h-4 w-28 animate-pulse rounded bg-gray-200" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-4 w-32 animate-pulse rounded bg-gray-200" />
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="ml-auto h-4 w-16 animate-pulse rounded bg-gray-200" />
+                      </td>
+                    </tr>
+                  ))
+                ) : filtered.length === 0 ? (
+                  <tr className="border-t">
+                    <td className="px-6 py-16 text-center text-sm text-gray-500" colSpan={3}>
+                      <div className="mx-auto mb-2 h-10 w-10 rounded-full bg-gray-100 p-2">
+                        <Search />
+                      </div>
+                      No permissions found.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((p) => (
+                    <tr key={p.id} className="border-t hover:bg-gray-50/60">
+                      <td className="px-6 py-4">
+                        <Badge variant="secondary" className="rounded-full px-3 py-1">
+                          {p.action}
+                        </Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-medium text-gray-800">{p.subject}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => openEdit(p)}
+                                aria-label="Edit"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-red-600 hover:text-red-700"
+                                onClick={() => confirmDelete(p)}
+                                aria-label="Delete"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 }
-
