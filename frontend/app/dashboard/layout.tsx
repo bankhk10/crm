@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { ReactNode, useEffect, useState } from 'react';
-import Sidebar from './_components/Sidebar';
-import Header from './_components/Header';
-import { useAuth } from '@/context/AuthContext';
-import { usePathname } from 'next/navigation';
+import React, { ReactNode, useEffect, useState } from "react";
+import Sidebar from "./_components/Sidebar";
+import Header from "./_components/Header";
+import { useAuth } from "@/context/AuthContext";
+import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -12,8 +12,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const main = document.querySelector('main');
+    const main = document.querySelector("main");
     main?.scrollTo({ top: 0 });
+    // ensure window and document scroll positions reset as well
+    window.scrollTo({ top: 0 });
+    document.documentElement.scrollTop = 0;
   }, [pathname]);
 
   if (isLoading) {
@@ -28,19 +31,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return null; // Should be handled by middleware
   }
 
-  return (
-    // 1. เปลี่ยนพื้นหลังหลักของทั้งหน้าเป็นสีแดง
-    <div className="flex h-screen bg-[#b92626]">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+return (
+  <div className="fixed inset-0 flex bg-[#b92626]"> {/* แทน h-screen ด้วย fixed inset-0 */}
+    <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 min-h-0 min-w-0 flex flex-col"> {/* สำคัญ: min-h-0 */}
+      <div className="shrink-0">
         <Header user={user} onMenuClick={() => setIsSidebarOpen(true)} />
-        
-        {/* 2. ทำให้พื้นที่แสดงเนื้อหามีพื้นหลังสีเทาและเพิ่มมุมโค้งมนที่สวยงามด้านบนซ้าย */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 rounded-tl-3xl p-4 md:p-8">
-          {children}
-        </main>
       </div>
+
+      {/* สกอร์ลตัวเดียวของทั้งหน้า */}
+      <main className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto bg-gray-100 rounded-tl-3xl p-4 md:p-8">
+        {children}
+      </main>
     </div>
-  );
+  </div>
+);
+
 }
