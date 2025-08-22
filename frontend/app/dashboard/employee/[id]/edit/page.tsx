@@ -440,14 +440,19 @@ export default function EditEmployeePage() {
               <label className="block text-sm font-medium text-gray-700">
                 สิทธิ์การใช้งาน *
               </label>
+
               <Controller
                 name="roleId"
                 control={control}
                 rules={{ required: "กรุณาเลือกสิทธิ์การใช้งาน" }}
                 render={({ field }) => (
                   <Select
-                    value={field.value || undefined} // ✅ ใช้ undefined แทน ""
-                    onValueChange={(val) => field.onChange(val)} // ✅ ชัดเจน
+                    // รี-mount เมื่อ roles มา หรือค่า roleId เปลี่ยน เพื่อให้ sync กับรายการ
+                    key={`${roles.length}-${field.value ?? ""}`}
+                    value={field.value ?? undefined} // ใช้ nullish เพื่อไม่ทับค่า "0"
+                    defaultValue={field.value ?? undefined} // เผื่อ first paint
+                    onValueChange={field.onChange}
+                    disabled={roles.length === 0} // กันคลิกระหว่างกำลังโหลด
                   >
                     <SelectTrigger
                       className={cn(
@@ -467,6 +472,7 @@ export default function EditEmployeePage() {
                   </Select>
                 )}
               />
+
               {errors.roleId && (
                 <p className="flex items-center mt-1 text-xs text-red-500">
                   <AlertTriangle size={14} className="mr-1" />

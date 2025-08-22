@@ -452,7 +452,7 @@ export default function CreateEmployeePage() {
                 </p>
               )}
             </div>
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 วันที่สิ้นสุดพนักงาน
               </label>
@@ -520,7 +520,7 @@ export default function CreateEmployeePage() {
                   {errors.endDate.message as string}
                 </p>
               )}
-            </div>
+            </div> */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 รหัสหัวหน้าพนักงาน
