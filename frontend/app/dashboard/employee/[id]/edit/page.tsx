@@ -72,7 +72,11 @@ export default function EditEmployeePage() {
     reset,
     setValue, // ✅ ใช้ sync birthDate (ISO) ตอนเลือกวันที่
     formState: { isSubmitting, errors },
-  } = useForm<EditEmployeeFormInputs>();
+  } = useForm<EditEmployeeFormInputs>({
+    defaultValues: {
+      roleId: undefined, // ✅ อย่าส่งเป็น ""
+    },
+  });
 
   const [roles, setRoles] = useState<Role[]>([]);
   const [employeeIdForUrl, setEmployeeIdForUrl] = useState("");
@@ -110,7 +114,7 @@ export default function EditEmployeePage() {
           gender: user.gender ?? "",
           phone: user.phone ?? "",
           email: user.email ?? "",
-          roleId: String(user.roleId ?? ""),
+          roleId: user.roleId != null ? String(user.roleId) : undefined, // ✅
           birthDate: "",
           address: user.address ?? "",
           subdistrict: "",
@@ -159,7 +163,6 @@ export default function EditEmployeePage() {
 
     if (id) fetchData();
   }, [id, reset, router, setValue]);
-
 
   const onSubmit: SubmitHandler<EditEmployeeFormInputs> = async (data) => {
     const payload: any = {
@@ -442,7 +445,10 @@ export default function EditEmployeePage() {
                 control={control}
                 rules={{ required: "กรุณาเลือกสิทธิ์การใช้งาน" }}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value || undefined} // ✅ ใช้ undefined แทน ""
+                    onValueChange={(val) => field.onChange(val)} // ✅ ชัดเจน
+                  >
                     <SelectTrigger
                       className={cn(
                         "w-full",

@@ -39,68 +39,89 @@ export default function ThaiAddressPicker({
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [amphures, setAmphures] = useState<Amphure[]>([]);
   const [tambons, setTambons] = useState<Tambon[]>([]);
-  const [provinceId, setProvinceId] = useState<number>();
-  const [amphureId, setAmphureId] = useState<number>();
 
+  const [provinceId, setProvinceId] = useState<number | undefined>(undefined);
+  const [amphureId, setAmphureId] = useState<number | undefined>(undefined);
+  const [tambonId, setTambonId] = useState<number | undefined>(undefined);
+
+  // 1) โหลด provinces
   useEffect(() => {
     api.get("/thai-address/provinces").then((res) => setProvinces(res.data));
   }, []);
 
+  // 2) provinceId -> โหลด amphures
   useEffect(() => {
     if (provinceId) {
       api
         .get("/thai-address/amphures", { params: { provinceId } })
         .then((res) => setAmphures(res.data));
+    } else {
+      setAmphures([]);
     }
+    // เมื่อ province เปลี่ยน เคลียร์ชั้นล่าง
+    setAmphureId(undefined);
+    setTambonId(undefined);
+    setTambons([]);
   }, [provinceId]);
 
+  // 3) amphureId -> โหลด tambons
   useEffect(() => {
     if (amphureId) {
       api
         .get("/thai-address/tambons", { params: { amphureId } })
         .then((res) => setTambons(res.data));
+    } else {
+      setTambons([]);
     }
+    // เมื่อ amphure เปลี่ยน เคลียร์ชั้นล่าง
+    setTambonId(undefined);
   }, [amphureId]);
 
+  // 4) ดันค่า default เข้า form เมื่อมี defaultValues
   useEffect(() => {
-    if (defaultValues) {
-      if (defaultValues.province) setValue("province", defaultValues.province);
-      if (defaultValues.district) setValue("district", defaultValues.district);
-      if (defaultValues.subdistrict)
-        setValue("subdistrict", defaultValues.subdistrict);
-      if (defaultValues.postalCode)
-        setValue("postalCode", defaultValues.postalCode);
-    }
+    if (!defaultValues) return;
+    if (defaultValues.province) setValue("province", defaultValues.province);
+    if (defaultValues.district) setValue("district", defaultValues.district);
+    if (defaultValues.subdistrict) setValue("subdistrict", defaultValues.subdistrict);
+    if (defaultValues.postalCode) setValue("postalCode", defaultValues.postalCode);
   }, [defaultValues, setValue]);
 
+  // 5) แม็ปชื่อจังหวัด -> provinceId เมื่อ provinces โหลดเสร็จ
   useEffect(() => {
-    if (defaultValues?.province && provinces.length) {
-      const p = provinces.find((p) => p.name_th === defaultValues.province);
-      if (p) setProvinceId(p.id);
-    }
+    if (!defaultValues?.province || provinces.length === 0) return;
+    const wanted = defaultValues.province.trim();
+    const p = provinces.find((x) => x.name_th.trim() === wanted);
+    if (p) setProvinceId(p.id);
   }, [defaultValues?.province, provinces]);
 
+  // 6) แม็ปชื่ออำเภอ -> amphureId เมื่อ amphures โหลดเสร็จ
   useEffect(() => {
-    if (defaultValues?.district && amphures.length) {
-      const a = amphures.find((a) => a.name_th === defaultValues.district);
-      if (a) setAmphureId(a.id);
-    }
+    if (!defaultValues?.district || amphures.length === 0) return;
+    const wanted = defaultValues.district.trim();
+    const a = amphures.find((x) => x.name_th.trim() === wanted);
+    if (a) setAmphureId(a.id);
   }, [defaultValues?.district, amphures]);
 
+  // 7) แม็ปชื่อตำบล -> tambonId และอัปเดต postalCode เมื่อ tambons โหลดเสร็จ
   useEffect(() => {
-    if (defaultValues?.subdistrict && tambons.length) {
-      const t = tambons.find((t) => t.name_th === defaultValues.subdistrict);
-      if (t) setValue("postalCode", t.zip_code.toString());
+    if (!defaultValues?.subdistrict || tambons.length === 0) return;
+    const wanted = defaultValues.subdistrict.trim();
+    const t = tambons.find((x) => x.name_th.trim() === wanted);
+    if (t) {
+      setTambonId(t.id);
+      setValue("postalCode", t.zip_code.toString());
     }
   }, [defaultValues?.subdistrict, tambons, setValue]);
 
+  // === handlers ===
   const handleProvinceChange = (value: string) => {
     const id = Number(value);
     setProvinceId(id);
-    setAmphureId(undefined);
-    setTambons([]);
+
     const found = provinces.find((p) => p.id === id);
     setValue("province", found ? found.name_th : "");
+
+    // เคลียร์ระดับล่าง
     setValue("district", "");
     setValue("subdistrict", "");
     setValue("postalCode", "");
@@ -109,14 +130,19 @@ export default function ThaiAddressPicker({
   const handleAmphureChange = (value: string) => {
     const id = Number(value);
     setAmphureId(id);
+
     const found = amphures.find((a) => a.id === id);
     setValue("district", found ? found.name_th : "");
+
+    // เคลียร์ระดับล่าง
     setValue("subdistrict", "");
     setValue("postalCode", "");
   };
 
   const handleTambonChange = (value: string) => {
     const id = Number(value);
+    setTambonId(id);
+
     const found = tambons.find((t) => t.id === id);
     setValue("subdistrict", found ? found.name_th : "");
     setValue("postalCode", found ? found.zip_code.toString() : "");
@@ -124,11 +150,15 @@ export default function ThaiAddressPicker({
 
   return (
     <>
+      {/* จังหวัด */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           จังหวัด
         </label>
-        <Select onValueChange={handleProvinceChange} value={provinceId?.toString()}>
+        <Select
+          onValueChange={handleProvinceChange}
+          value={provinceId ? String(provinceId) : undefined}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="กรุณาเลือก" />
           </SelectTrigger>
@@ -143,13 +173,14 @@ export default function ThaiAddressPicker({
         <input type="hidden" {...register("province")} />
       </div>
 
+      {/* อำเภอ */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           อำเภอ
         </label>
         <Select
           onValueChange={handleAmphureChange}
-          value={amphureId?.toString()}
+          value={amphureId ? String(amphureId) : undefined}
           disabled={!provinceId}
         >
           <SelectTrigger className="w-full">
@@ -166,11 +197,16 @@ export default function ThaiAddressPicker({
         <input type="hidden" {...register("district")} />
       </div>
 
+      {/* ตำบล */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           ตำบล
         </label>
-        <Select onValueChange={handleTambonChange} disabled={!amphureId}>
+        <Select
+          onValueChange={handleTambonChange}
+          value={tambonId ? String(tambonId) : undefined}
+          disabled={!amphureId}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="กรุณาเลือก" />
           </SelectTrigger>
@@ -185,6 +221,7 @@ export default function ThaiAddressPicker({
         <input type="hidden" {...register("subdistrict")} />
       </div>
 
+      {/* รหัสไปรษณีย์ */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           รหัสไปรษณีย์
