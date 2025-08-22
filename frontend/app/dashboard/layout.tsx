@@ -1,13 +1,23 @@
 'use client';
 
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import Sidebar from './_components/Sidebar';
 import Header from './_components/Header';
 import { useAuth } from '@/context/AuthContext';
+import { usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const main = document.querySelector('main');
+    main?.scrollTo({ top: 0 });
+    // ensure window and document scroll positions reset as well
+    window.scrollTo({ top: 0 });
+    document.documentElement.scrollTop = 0;
+  }, [pathname]);
 
   if (isLoading) {
     return (
