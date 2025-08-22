@@ -71,7 +71,7 @@ const mockActivities = [
 
 // --- Left Panel Component ---
 const UserProfilePanel = ({ user }: { user: User }) => (
-  <div className="w-full lg:w-1/4 xl:w-1/5 bg-white rounded-2xl shadow-lg p-6 self-start sticky top-8">
+  <div className="w-full lg:w-1/4 xl:w-1/5 bg-white rounded-2xl shadow-lg p-6 self-start lg:sticky lg:top-8">
     <div className="flex flex-col items-center text-center">
       <div className="relative w-28 h-28 rounded-full overflow-hidden mb-4 border-4 border-gray-200">
         <Image
@@ -161,7 +161,7 @@ const ActivityCard = ({
       </div>
       <div className="w-full md:w-2/3 border-t md:border-t-0 md:border-l border-gray-200 md:pl-6 pt-4 md:pt-0">
         <p className="font-bold text-gray-800 mb-2">ข้อมูล</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <p className="text-gray-500">รายรับ</p>
             <p className="font-bold text-gray-900">
@@ -238,7 +238,7 @@ export default function UserDetailPage() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
+    <div className="flex flex-col lg:flex-row gap-8 p-4 md:p-8">
       <UserProfilePanel user={user} />
 
       <div className="w-full lg:flex-1">
