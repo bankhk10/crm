@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import api from "@/lib/api";
 import {
   Select,
@@ -21,8 +22,9 @@ type Tambon = {
 };
 
 interface Props {
-  register: any;
-  setValue: (name: string, value: any, options?: any) => void;
+  // ✅ ปรับให้ตรงกับ react-hook-form
+  register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
   defaultValues?: {
     province?: string;
     district?: string;
@@ -80,10 +82,14 @@ export default function ThaiAddressPicker({
   // 4) ดันค่า default เข้า form เมื่อมี defaultValues
   useEffect(() => {
     if (!defaultValues) return;
-    if (defaultValues.province) setValue("province", defaultValues.province);
-    if (defaultValues.district) setValue("district", defaultValues.district);
-    if (defaultValues.subdistrict) setValue("subdistrict", defaultValues.subdistrict);
-    if (defaultValues.postalCode) setValue("postalCode", defaultValues.postalCode);
+    if (defaultValues.province)
+      setValue("province", defaultValues.province, { shouldDirty: true });
+    if (defaultValues.district)
+      setValue("district", defaultValues.district, { shouldDirty: true });
+    if (defaultValues.subdistrict)
+      setValue("subdistrict", defaultValues.subdistrict, { shouldDirty: true });
+    if (defaultValues.postalCode)
+      setValue("postalCode", defaultValues.postalCode, { shouldDirty: true });
   }, [defaultValues, setValue]);
 
   // 5) แม็ปชื่อจังหวัด -> provinceId เมื่อ provinces โหลดเสร็จ
@@ -109,7 +115,10 @@ export default function ThaiAddressPicker({
     const t = tambons.find((x) => x.name_th.trim() === wanted);
     if (t) {
       setTambonId(t.id);
-      setValue("postalCode", t.zip_code.toString());
+      setValue("postalCode", t.zip_code.toString(), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
   }, [defaultValues?.subdistrict, tambons, setValue]);
 
@@ -119,12 +128,15 @@ export default function ThaiAddressPicker({
     setProvinceId(id);
 
     const found = provinces.find((p) => p.id === id);
-    setValue("province", found ? found.name_th : "");
+    setValue("province", found ? found.name_th : "", {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
 
     // เคลียร์ระดับล่าง
-    setValue("district", "");
-    setValue("subdistrict", "");
-    setValue("postalCode", "");
+    setValue("district", "", { shouldValidate: true, shouldDirty: true });
+    setValue("subdistrict", "", { shouldValidate: true, shouldDirty: true });
+    setValue("postalCode", "", { shouldValidate: true, shouldDirty: true });
   };
 
   const handleAmphureChange = (value: string) => {
@@ -132,11 +144,14 @@ export default function ThaiAddressPicker({
     setAmphureId(id);
 
     const found = amphures.find((a) => a.id === id);
-    setValue("district", found ? found.name_th : "");
+    setValue("district", found ? found.name_th : "", {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
 
     // เคลียร์ระดับล่าง
-    setValue("subdistrict", "");
-    setValue("postalCode", "");
+    setValue("subdistrict", "", { shouldValidate: true, shouldDirty: true });
+    setValue("postalCode", "", { shouldValidate: true, shouldDirty: true });
   };
 
   const handleTambonChange = (value: string) => {
@@ -144,8 +159,14 @@ export default function ThaiAddressPicker({
     setTambonId(id);
 
     const found = tambons.find((t) => t.id === id);
-    setValue("subdistrict", found ? found.name_th : "");
-    setValue("postalCode", found ? found.zip_code.toString() : "");
+    setValue("subdistrict", found ? found.name_th : "", {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue("postalCode", found ? found.zip_code.toString() : "", {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
   return (
