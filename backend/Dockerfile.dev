@@ -1,5 +1,5 @@
 # Use the same base image for consistency
-FROM node:18-slim
+FROM node:22.18.0-slim
 
 # Install OpenSSL, which is recommended by Prisma
 RUN apt-get update && apt-get install -y openssl

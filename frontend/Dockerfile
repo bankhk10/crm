@@ -1,19 +1,19 @@
 # Stage 1: Install dependencies
-# Use node:18-slim for a smaller and more stable base image
-FROM node:18-slim AS deps
+# Use node:22.18.0-slim for a smaller and more stable base image
+FROM node:22.18.0-slim AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
 # Stage 2: Build the application
-FROM node:18-slim AS builder
+FROM node:22.18.0-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
 # Stage 3: Production server
-FROM node:18-slim AS runner
+FROM node:22.18.0-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
