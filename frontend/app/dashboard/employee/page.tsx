@@ -153,6 +153,8 @@ export default function EmployeePage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   const { user: currentUser, isLoading } = useAuth();
   const router = useRouter();
@@ -178,6 +180,10 @@ export default function EmployeePage() {
       fetchData();
     }
   }, [currentUser, isLoading, router]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const handleDelete = (user: User) => {
     setSelectedUser(user);
@@ -209,6 +215,15 @@ export default function EmployeePage() {
       u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentUsers = filteredUsers.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+  const startDisplay = filteredUsers.length ? startIndex + 1 : 0;
+  const endDisplay = Math.min(startIndex + itemsPerPage, filteredUsers.length);
 
   return (
     <>
@@ -246,7 +261,7 @@ export default function EmployeePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {filteredUsers.map((user) => (
+          {currentUsers.map((user) => (
             <UserCard
               key={user.id}
               user={user}
@@ -256,12 +271,24 @@ export default function EmployeePage() {
         </div>
 
         <div className="flex justify-between items-center mt-8 text-sm text-gray-600">
-          <p>1-8 of 28</p>
+          <p>
+            {startDisplay}-{endDisplay} of {filteredUsers.length}
+          </p>
           <div className="flex items-center space-x-2">
-            <button className="p-2 rounded-md hover:bg-gray-100">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50"
+            >
               <ChevronLeft size={20} />
             </button>
-            <button className="p-2 rounded-md hover:bg-gray-100">
+            <button
+              onClick={() =>
+                setCurrentPage((p) => Math.min(p + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-md hover:bg-gray-100 disabled:opacity-50"
+            >
               <ChevronRight size={20} />
             </button>
           </div>
