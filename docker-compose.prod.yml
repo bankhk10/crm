@@ -1,53 +1,74 @@
-# === PRODUCTION ENVIRONMENT (with Google Cloud SQL) ===
-# Use this file for deploying on a VM.
-version: '3.8'
+version: "3.9"
 
 services:
-  db-proxy:
-    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
-    container_name: crm_db_proxy_prod
+  cloud-sql-proxy:
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.11.4
     command:
-      - "--structured-logs"
-      - "--address=0.0.0.0"
+      - "--addr=0.0.0.0"
       - "--port=3306"
-      - "webprojectbank:asia-southeast1:crm-mysql-instance" # <-- แก้ไขให้เป็น Instance Connection Name ของคุณ
+      - "--auto-iam-authn"
+      # หากใช้ Private IP ค่อยเพิ่ม --private-ip (ตอนนี้ต่อปกติพอ)
+      - "webbank-470204:asia-southeast1:base-mysql"
     restart: always
-    networks:
-      - crm-network-prod
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: crm_backend_prod
-    restart: always
+    env_file:
+      - ./backend/.env.prod
     depends_on:
-      - db-proxy
-    ports:
-      - "3001:8080"
-    environment:
-      DATABASE_URL: "mysql://${DB_USER}:${DB_PASSWORD}@db-proxy:3306/${DB_NAME}"
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      PORT: 8080
-    networks:
-      - crm-network-prod
+      - cloud-sql-proxy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: always
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: crm_frontend_prod
-    restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    env_file:
+      - ./frontend/.env.prod
     depends_on:
       - backend
-    networks:
-      - crm-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:3000 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: always
 
-networks:
-  crm-network-prod:
-    driver: bridge
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ops/nginx/conf.d:/etc/nginx/conf.d:ro
+      - certs:/etc/letsencrypt
+      - webroot:/var/www/certbot
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certs:/etc/letsencrypt
+      - webroot:/var/www/certbot
+    entrypoint: /bin/sh
+    command: -c "while :; do certbot renew --webroot -w /var/www/certbot --deploy-hook 'nginx -s reload'; sleep 12h; done"
+    restart: always
+
+volumes:
+  certs:
+  webroot:
