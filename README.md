@@ -27,20 +27,23 @@ Password: password123
 ├─ backend/
 │ ├─ prisma/
 │ ├─ src/
-│ ├─ .gitignore
 │ ├─ Dockerfile
 │ └─ Dockerfile.dev
 ├─ frontend/
 │ ├─ app/
+│ ├─ components/
+│ ├─ context/
 │ ├─ lib/
 │ ├─ public/
-│ ├─ .gitignore
 │ ├─ Dockerfile
 │ └─ Dockerfile.dev
-├─ .gitignore
-├─ docker-compose.yml
 ├─ docker-compose.dev.yml
-├─ .env
+├─ docker-compose.prod.yml
+├─ docker-compose.prod_rundatabaseinvm.yml
+├─ .env.production.example
+├─ .gitignore
+├─ .nvmrc
+├─ dd
 └─ README.md
 
 🛑 การหยุดโปรเจกต์หากต้องการหยุดการทำงานของ Container ทั้งหมด ให้กด Ctrl + C ใน Terminal แล้วรันคำสั่ง:docker-compose down
