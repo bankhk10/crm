@@ -37,15 +37,16 @@ const navItems = [
     ],
   },
   { href: "/dashboard/marketing", label: "การตลาด", icon: Megaphone },
-  {
-    href: "/dashboard/customers",
-    label: "ลูกค้า",
-    icon: Users,
-    children: [
-      { href: "/dashboard/customers/list", label: "รายชื่อลูกค้า" },
-      // { href: "/dashboard/customers/create", label: "สร้างลูกค้าใหม่" },
-    ],
-  },
+  { href: "/dashboard/customers/list", label: "ลูกค้า", icon: Users },
+  // {
+  //   href: "/dashboard/customers",
+  //   label: "ลูกค้า",
+  //   icon: Users,
+  //   children: [
+  //     { href: "/dashboard/customers/list", label: "รายชื่อลูกค้า" },
+  //     { href: "/dashboard/customers/create", label: "สร้างลูกค้าใหม่" },
+  //   ],
+  // },
   { href: "/dashboard/employee", label: "พนักงาน", icon: UserCog },
   { href: "/dashboard/roles", label: "สิทธิ์", icon: Shield },
   // { href: "/admin/roles", label: "สิทธิ์", icon: Shield },
