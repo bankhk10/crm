@@ -1,32 +1,19 @@
-# ---- Build Stage ----
-FROM node:20-alpine AS builder
-WORKDIR /app
-
-# ติดตั้ง dependencies (รวม dev dependencies ด้วย เพราะต้องใช้ตอน build)
-COPY package*.json ./
-RUN npm install
-
-# คัดลอก source code ทั้งหมด
-COPY . .
-
-# สร้าง production build ของ Next.js
-RUN npm run build
-
 # ---- Production Stage ----
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# ติดตั้ง sharp สำหรับ production image
+# ติดตั้ง sharp
 RUN npm install sharp
 
-# คัดลอกไฟล์ build มาจาก builder
+# คัดลอกไฟล์ที่ build แล้วจาก builder
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/.next/standalone ./standalone
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
 
 EXPOSE 3000
 
-CMD ["npm", "run", "start"]
+# ใช้ standalone server
+CMD ["node", "standalone/server.js"]
