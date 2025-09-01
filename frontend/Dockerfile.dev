@@ -1,11 +1,32 @@
-FROM node:22.18.0-slim
-
+# ---- Build Stage ----
+FROM node:20-alpine AS builder
 WORKDIR /app
 
+# ติดตั้ง dependencies (รวม dev dependencies ด้วย เพราะต้องใช้ตอน build)
 COPY package*.json ./
 RUN npm install
 
-# เพิ่ม env นี้เข้าไป
-ENV CHOKIDAR_USEPOLLING=true
+# คัดลอก source code ทั้งหมด
+COPY . .
 
-CMD ["npm", "run", "dev"]
+# สร้าง production build ของ Next.js
+RUN npm run build
+
+# ---- Production Stage ----
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# ติดตั้ง sharp สำหรับ production image
+RUN npm install sharp
+
+# คัดลอกไฟล์ build มาจาก builder
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]
