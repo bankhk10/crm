@@ -154,7 +154,7 @@ export default function LoginPage() {
                 </label>
               </div>
               <Link
-                href="#"
+                href="/forgot-password"
                 className={`${prompt.className} text-gray-600 hover:text-gray-900`}
               >
                 ลืมรหัสผ่าน
