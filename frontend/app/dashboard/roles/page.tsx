@@ -101,7 +101,7 @@ function RoleDialog({
             <Shield className="h-5 w-5" />
             {mode === 'add' ? 'Add Role' : 'Edit Role'}
           </DialogTitle>
-          <DialogDescription>Set a role name and choose permissions.</DialogDescription>
+          {/* <DialogDescription>Set a role name and choose permissions.</DialogDescription> */}
         </DialogHeader>
 
         <form onSubmit={handleSubmit(submit)} className="space-y-5">
@@ -355,7 +355,7 @@ export default function AdminRolesPage() {
         <Separator orientation="vertical" className="h-4" />
         <Link href="/dashboard/roles" className="font-medium text-gray-900">Roles</Link>
         <Separator orientation="vertical" className="h-4" />
-        <Link href="/dashboard/permissions" className="text-blue-600 hover:underline">Permissions</Link>
+        {/* <Link href="/dashboard/permissions" className="text-blue-600 hover:underline">Permissions</Link> */}
       </nav>
 
       <Card className="w-full rounded-2xl shadow-lg">
@@ -366,14 +366,14 @@ export default function AdminRolesPage() {
                 <Shield className="h-5 w-5" />
                 Roles
               </CardTitle>
-              <CardDescription>Group permissions into roles.</CardDescription>
+              {/* <CardDescription>Group permissions into roles.</CardDescription> */}
             </div>
 
             <div className="flex w-full gap-2 md:w-auto">
               <div className="relative w-full md:w-[280px]">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
-                  placeholder="Search role or permission…"
+                  placeholder="ค้นหา role or permission…"
                   className="pl-9"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -381,7 +381,7 @@ export default function AdminRolesPage() {
               </div>
               <Button onClick={openAdd} className="whitespace-nowrap">
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Add Role
+                เพิ่ม Role
               </Button>
             </div>
           </div>
