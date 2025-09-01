@@ -756,12 +756,18 @@ export default function EditEmployeePage() {
             </div>
           </div>
         </div>
-
-        <div className="flex justify-center">
+        <div className="flex justify-center space-x-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-400"
+          >
+            ย้อนกลับ
+          </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-600 text-white font-bold py-3 px-12 rounded-lg hover:bg-blue-700 disabled:bg-blue-400"
+            className="bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700 disabled:bg-blue-400"
           >
             {isSubmitting ? "กำลังบันทึก..." : "บันทึก"}
           </button>
