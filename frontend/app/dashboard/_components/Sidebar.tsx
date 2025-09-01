@@ -194,10 +194,14 @@ export default function Sidebar({
     const parentMenu = navItems.find(
       (item) =>
         item.children &&
-        item.children.some(
-          (child: any) =>
+        item.children.some((child: any) => {
+          if (child.href === "/dashboard") {
+            return pathname === child.href;
+          }
+          return (
             pathname === child.href || pathname.startsWith(child.href + "/")
-        )
+          );
+        })
     );
 
     if (parentMenu) {
