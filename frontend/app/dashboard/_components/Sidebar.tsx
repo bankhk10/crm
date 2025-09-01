@@ -99,7 +99,18 @@ const NavItem = ({
   onLinkClick: () => void;
 }) => {
   const pathname = usePathname();
-  const isParentActive = item.children && pathname.startsWith(item.href);
+  const isParentActive =
+    item.children &&
+    (item.href === "/dashboard"
+      ? item.children.some((child: any) => {
+          if (child.href === "/dashboard") {
+            return pathname === child.href;
+          }
+          return (
+            pathname === child.href || pathname.startsWith(child.href + "/")
+          );
+        })
+      : pathname === item.href || pathname.startsWith(item.href + "/"));
 
   if (item.children) {
     return (
