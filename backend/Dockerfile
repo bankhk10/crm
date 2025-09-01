@@ -23,4 +23,5 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 EXPOSE 3001
 # ถ้า main ของคุณคือ dist/src/main.js ให้แก้เป็น node dist/src/main.js
-CMD ["sh", "-c", "npx prisma db push && npx prisma db seed && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma db push && npx prisma db seed && node dist/src/main.js"]
+

@@ -1,23 +1,21 @@
-# --- deps ---
-FROM node:22.18.0-slim AS deps
+# Stage 1: Build
+FROM node:22.18.0-slim AS builder
+
+# install build tools for sharp
+RUN apt-get update && apt-get install -y python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install --legacy-peer-deps
+RUN npm install sharp --save
 
-# --- builder ---
-FROM node:22.18.0-slim AS builder
-WORKDIR /app
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# --- runner ---
-FROM node:22.18.0-slim AS runner
+# Stage 2: Run
+FROM node:22.18.0-slim
 WORKDIR /app
-ENV NODE_ENV=production PORT=3000
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app ./
 EXPOSE 3000
-CMD ["node","server.js"]
+CMD ["npm", "start"]
