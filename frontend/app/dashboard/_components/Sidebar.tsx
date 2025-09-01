@@ -22,7 +22,17 @@ import Image from "next/image";
 
 // --- Data structure for navigation items ---
 const navItems = [
-  { href: "/dashboard", label: "รายงาน", icon: BarChart2 },
+  {
+    href: "/dashboard",
+    label: "รายงาน",
+    icon: BarChart2,
+    children: [
+      { href: "/dashboard", label: "รายงานภาพรวม" },
+      { href: "/dashboard/sales-report", label: "รายงานการขาย" },
+      { href: "/dashboard/marketing-report", label: "รายงานการตลาด" },
+      { href: "/dashboard/activity-report", label: "รายงานกิจกรรม" },
+    ],
+  },
   { href: "/dashboard/activities", label: "กิจกรรม", icon: Activity },
   { href: "/dashboard/calendar", label: "ปฏิทิน", icon: Calendar },
   { href: "/dashboard/map", label: "แผนที่", icon: Map },
@@ -89,7 +99,18 @@ const NavItem = ({
   onLinkClick: () => void;
 }) => {
   const pathname = usePathname();
-  const isParentActive = item.children && pathname.startsWith(item.href);
+  const isParentActive =
+    item.children &&
+    (item.href === "/dashboard"
+      ? item.children.some((child: any) => {
+          if (child.href === "/dashboard") {
+            return pathname === child.href;
+          }
+          return (
+            pathname === child.href || pathname.startsWith(child.href + "/")
+          );
+        })
+      : pathname === item.href || pathname.startsWith(item.href + "/"));
 
   if (item.children) {
     return (
@@ -120,13 +141,16 @@ const NavItem = ({
             {item.children.map((child: any) => (
               <Link key={child.href} href={child.href} onClick={onLinkClick}>
                 <div
-                  className={`block p-2 text-sm rounded-md transition-colors ${
+                  className={`flex items-center justify-between p-2 text-sm rounded-md transition-colors ${
                     pathname === child.href
                       ? "text-white font-bold"
                       : "text-red-200 hover:text-white"
                   }`}
                 >
-                  {child.label}
+                  <span>{child.label}</span>
+                  {pathname === child.href && (
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                  )}
                 </div>
               </Link>
             ))}
@@ -177,9 +201,18 @@ export default function Sidebar({
 
   // This effect ensures the correct submenu is open based on the current URL
   useEffect(() => {
-    // Find if the current path belongs to a parent menu with children
+    // Find if the current path belongs to a parent menu by checking its children
     const parentMenu = navItems.find(
-      (item) => item.children && pathname.startsWith(item.href)
+      (item) =>
+        item.children &&
+        item.children.some((child: any) => {
+          if (child.href === "/dashboard") {
+            return pathname === child.href;
+          }
+          return (
+            pathname === child.href || pathname.startsWith(child.href + "/")
+          );
+        })
     );
 
     if (parentMenu) {
