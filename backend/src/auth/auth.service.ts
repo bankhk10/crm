@@ -1,5 +1,5 @@
 
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -52,6 +52,17 @@ export class AuthService {
     if (!user) throw new UnauthorizedException();
     const { password, ...result } = user;
     return result;
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findOneByEmail(email);
+    if (!user) {
+      throw new NotFoundException('ไม่พบเมลล์สมัครเข้าใช้งาน');
+    }
+    // Placeholder for sending reset email
+    // In production, integrate with an email service here
+    console.log(`Send password reset link to ${email}`);
+    return { message: 'ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลแล้ว' };
   }
 
   private async generateTokens(userId: number, email: string, role: string) {
