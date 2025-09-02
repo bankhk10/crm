@@ -1,5 +1,5 @@
 
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, NotFoundException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -7,6 +7,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class AuthService {
@@ -60,5 +61,31 @@ export class AuthService {
       accessToken: this.jwtService.sign(payload, { secret: this.configService.get('JWT_SECRET'), expiresIn: '59m' }),
       refreshToken: this.jwtService.sign(payload, { secret: this.configService.get('JWT_REFRESH_SECRET'), expiresIn: '7d' }),
     };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.usersService.findOneByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Email not found');
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: this.configService.get('SMTP_HOST'),
+      port: Number(this.configService.get('SMTP_PORT')) || 587,
+      secure: false,
+      auth: {
+        user: this.configService.get('SMTP_USER'),
+        pass: this.configService.get('SMTP_PASS'),
+      },
+    });
+
+    await transporter.sendMail({
+      from: this.configService.get('SMTP_USER'),
+      to: email,
+      subject: 'Reset your password',
+      text: 'Please use the provided link to reset your password.',
+    });
+
+    return { message: 'Password reset email sent' };
   }
 }
