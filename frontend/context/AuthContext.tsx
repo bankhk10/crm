@@ -19,7 +19,7 @@ interface User {
   email: string;
   name: string;
   role: { name: string; permissions: any[] };
-  type: 'Admin' | 'GM' | 'User';
+  type?: string;
 }
 
 interface AuthContextType {
@@ -71,8 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Set the auth header for the initial request
           api.defaults.headers.Authorization = `Bearer ${accessToken}`;
           const profile = await api.get('/auth/profile');
-          const userData = { ...profile.data, type: profile.data.type || 'User' };
-          setUser(userData);
+          setUser(profile.data);
           startTokenTimer(accessToken);
         } catch (error) {
           console.error('Failed to fetch profile, session might be expired.', error);
@@ -116,10 +115,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Fetch user profile to update the state
     api.get('/auth/profile').then(response => {
-      const userData = { ...response.data, type: response.data.type || 'User' };
-      setUser(userData);
+      setUser(response.data);
       toast.success(`เข้าสู่ระบบสำเร็จ`);
-      if (userData.type === 'Admin') {
+      const role = response.data.type || response.data.role?.name;
+      if (role === 'Admin') {
         router.push('/admin');
       } else {
         router.push('/dashboard');
