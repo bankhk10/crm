@@ -72,6 +72,13 @@ const roleMenuRestrictions: Record<string, string[]> = {
   SALES_EMPLOYEE: ["/dashboard", "/dashboard/marketing"],
 };
 
+// Restrict menu visibility based on user type
+const typeMenuRestrictions: Record<string, string[]> = {
+  User: ["/dashboard/employee", "/dashboard/roles"],
+  GM: ["/dashboard/roles"],
+  Admin: [],
+};
+
 const Logo = () => (
   <div className="bg-red-650 p-4 flex items-center justify-center mb-6 mr-5 mt-4">
     <div className="relative w-36 h-36 rounded-lg overflow-hidden p-2">
@@ -189,14 +196,19 @@ export default function Sidebar({
 
   const filteredNavItems = navItems.filter((item) => {
     const roleName = user?.role.name;
-    
+    const userType = user?.type as keyof typeof typeMenuRestrictions;
+
     if (item.href.startsWith("/dashboard/roles")) {
-      return roleName === "ADMIN" || roleName === "CEO";
+      return userType === "Admin";
     }
 
-    const restricted =
+    const roleRestricted =
       roleMenuRestrictions[roleName as keyof typeof roleMenuRestrictions] || [];
-    return !restricted.includes(item.href);
+    const typeRestricted = typeMenuRestrictions[userType] || [];
+    return (
+      !roleRestricted.includes(item.href) &&
+      !typeRestricted.includes(item.href)
+    );
   });
 
   // This effect ensures the correct submenu is open based on the current URL

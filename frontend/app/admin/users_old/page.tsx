@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { PlusCircle, Trash2, Edit, X, AlertTriangle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import PermissionButtons from '@/components/PermissionButtons';
 
 // --- Type Definitions ---
 interface Role {
@@ -250,6 +251,8 @@ export default function AdminUsersPage() {
         <Link href="/admin/roles" className="text-blue-600 hover:underline">Roles</Link>
         <Link href="/admin/permissions" className="text-blue-600 hover:underline">Permissions</Link>
       </nav>
+
+      <PermissionButtons />
 
       <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg w-full min-h-full">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">

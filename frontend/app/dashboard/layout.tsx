@@ -5,6 +5,7 @@ import Sidebar from "./_components/Sidebar";
 import Header from "./_components/Header";
 import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
+import PermissionButtons from "@/components/PermissionButtons";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -42,6 +43,7 @@ return (
 
       {/* สกอร์ลตัวเดียวของทั้งหน้า */}
       <main className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto bg-gray-100 rounded-tl-3xl p-4 md:p-8">
+        <PermissionButtons />
         {children}
       </main>
     </div>

@@ -8,9 +8,21 @@ export function middleware(request: NextRequest) {
   const authRoutes = ['/login', '/register'];
   const protectedRoutes = ['/dashboard', '/admin'];
 
-  // If trying to access auth page while logged in, redirect to dashboard
+  const decodeToken = (token: string) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload;
+    } catch {
+      return null;
+    }
+  };
+
+  // If trying to access auth page while logged in, redirect to proper page
   if (accessToken && authRoutes.includes(pathname)) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    const payload: any = decodeToken(accessToken);
+    const role = payload?.type || payload?.role;
+    const target = role === 'Admin' ? '/admin' : '/dashboard';
+    return NextResponse.redirect(new URL(target, request.url));
   }
 
   // If trying to access protected page while not logged in, redirect to login
