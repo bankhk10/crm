@@ -119,11 +119,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = { ...response.data, type: response.data.type || 'User' };
       setUser(userData);
       toast.success(`เข้าสู่ระบบสำเร็จ`);
-      if (userData.type === 'Admin') {
-        router.push('/admin');
-      } else {
-        router.push('/dashboard');
-      }
+      router.push('/');
     });
   };
 
