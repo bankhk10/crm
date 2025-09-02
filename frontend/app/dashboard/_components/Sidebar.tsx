@@ -137,7 +137,7 @@ const NavItem = ({
             isOpen ? "max-h-40" : "max-h-0"
           }`}
         >
-          <div className="pl-8 pt-2 space-y-1">
+          <div className="pl-8 pt-2 space-y-1 bg-red-800 mt-1 mb-2 rounded-xl">
             {item.children.map((child: any) => (
               <Link key={child.href} href={child.href} onClick={onLinkClick}>
                 <div
