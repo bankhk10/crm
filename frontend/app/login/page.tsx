@@ -5,8 +5,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import Link from "next/link";
-import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { Prompt } from "next/font/google";
 
@@ -40,6 +39,7 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    watch,
   } = useForm<LoginFormInputs>();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -53,6 +53,20 @@ export default function LoginPage() {
         error.response?.data?.message ||
           "Login failed. Please check your credentials."
       );
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    const email = watch("email");
+    if (!email) {
+      toast.error("Please enter your email first.");
+      return;
+    }
+    try {
+      await api.post("/auth/forgot-password", { email });
+      toast.success("Password reset email sent");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Email not found");
     }
   };
 
@@ -153,12 +167,13 @@ export default function LoginPage() {
                   บันทึกรหัส
                 </label>
               </div>
-              <Link
-                href="#"
+              <button
+                type="button"
+                onClick={handleForgotPassword}
                 className={`${prompt.className} text-gray-600 hover:text-gray-900`}
               >
                 ลืมรหัสผ่าน
-              </Link>
+              </button>
             </div>
             <div className="flex justify-center">
               <button
