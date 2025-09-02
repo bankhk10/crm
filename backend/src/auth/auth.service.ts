@@ -33,7 +33,7 @@ export class AuthService {
     const isMatch = await bcrypt.compare(loginDto.password, user.password);
     if (!isMatch) throw new UnauthorizedException('Invalid credentials');
     if (user.status && user.status.toLowerCase() === 'inactive') throw new UnauthorizedException('User inactive');
-    return this.generateTokens(user.id, user.email, user.role.name);
+    return this.generateTokens(user.id, user.email, user.role.name, user.type);
   }
 
   async refreshToken(refreshToken: string) {
@@ -41,7 +41,7 @@ export class AuthService {
       const payload = this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_REFRESH_SECRET') });
       const user = await this.usersService.findOne(payload.sub);
       if (!user) throw new UnauthorizedException();
-      return this.generateTokens(user.id, user.email, user.role.name);
+      return this.generateTokens(user.id, user.email, user.role.name, user.type);
     } catch (e) {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -65,8 +65,8 @@ export class AuthService {
     return { message: 'ส่งลิงก์รีเซ็ตรหัสผ่านไปที่อีเมลแล้ว' };
   }
 
-  private async generateTokens(userId: number, email: string, role: string) {
-    const payload = { email, sub: userId, role };
+  private async generateTokens(userId: number, email: string, role: string, type: string) {
+    const payload = { email, sub: userId, role, type };
     return {
       accessToken: this.jwtService.sign(payload, { secret: this.configService.get('JWT_SECRET'), expiresIn: '59m' }),
       refreshToken: this.jwtService.sign(payload, { secret: this.configService.get('JWT_REFRESH_SECRET'), expiresIn: '7d' }),
