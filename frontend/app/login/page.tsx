@@ -5,10 +5,10 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import Link from "next/link";
-import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import { Prompt } from "next/font/google";
+import Link from "next/link";
 
 type LoginFormInputs = {
   email: string;
@@ -154,7 +154,7 @@ export default function LoginPage() {
                 </label>
               </div>
               <Link
-                href="#"
+                href="/forgot-password"
                 className={`${prompt.className} text-gray-600 hover:text-gray-900`}
               >
                 ลืมรหัสผ่าน
