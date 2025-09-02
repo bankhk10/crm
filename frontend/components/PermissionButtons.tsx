@@ -12,7 +12,7 @@ export default function PermissionButtons() {
       <Button size="sm">
         <Plus className="h-4 w-4 mr-2" /> สร้าง
       </Button>
-      {user?.type !== "User" && (
+      {(user?.type === "GM" || user?.type === "Admin") && (
         <Button size="sm" variant="secondary">
           <Pencil className="h-4 w-4 mr-2" /> แก้ไข
         </Button>
