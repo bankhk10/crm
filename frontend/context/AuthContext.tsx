@@ -19,6 +19,7 @@ interface User {
   email: string;
   name: string;
   role: { name: string; permissions: any[] };
+  type?: string;
 }
 
 interface AuthContextType {
@@ -116,7 +117,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     api.get('/auth/profile').then(response => {
       setUser(response.data);
       toast.success(`เข้าสู่ระบบสำเร็จ`);
-      router.push('/dashboard');
+      const role = response.data.type || response.data.role?.name;
+      if (role === 'Admin') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     });
   };
 

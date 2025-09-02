@@ -44,6 +44,7 @@ type CreateEmployeeFormInputs = {
   phone: string;
   email: string;
   password: string;
+  userType: string;
   roleId: string;
   birthDate: string;
   address: string;
@@ -70,6 +71,7 @@ export default function CreateEmployeePage() {
     formState: { isSubmitting, errors },
   } = useForm<CreateEmployeeFormInputs>({
     shouldFocusError: true,
+    defaultValues: { userType: "User" },
   });
   const [roles, setRoles] = useState<Role[]>([]);
   const [birthDate, setBirthDate] = useState<Date | undefined>();
@@ -93,8 +95,9 @@ export default function CreateEmployeePage() {
   }, []);
 
   const onSubmit: SubmitHandler<CreateEmployeeFormInputs> = async (data) => {
+    const { userType, ...rest } = data;
     const payload = {
-      ...data,
+      ...rest,
       email: data.email.trim(),
       age: data.age ? Number(data.age) : undefined,
       birthDate: data.birthDate
@@ -105,6 +108,7 @@ export default function CreateEmployeePage() {
         : undefined,
       endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
       roleId: Number(data.roleId),
+      type: userType,
     };
     try {
       await api.post("/employees", payload);
@@ -618,6 +622,39 @@ export default function CreateEmployeePage() {
                   {errors.password.message as string}
                 </p>
               )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ประเภทผู้ใช้ *
+              </label>
+              <Select
+                defaultValue="User"
+                onValueChange={(value) =>
+                  setValue("userType", value, { shouldValidate: true })
+                }
+              >
+                <SelectTrigger
+                  className={cn("w-full", errors.userType && "border-red-500")}
+                >
+                  <SelectValue placeholder="กรุณาเลือก" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="GM">GM</SelectItem>
+                  <SelectItem value="User">User</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.userType && (
+                <p className="flex items-center mt-1 text-xs text-red-500">
+                  <AlertTriangle size={14} className="mr-1" />
+                  {errors.userType.message as string}
+                </p>
+              )}
+              <input
+                type="hidden"
+                {...register("userType", { required: "กรุณาเลือกประเภทผู้ใช้" })}
+              />
             </div>
 
             <div>
