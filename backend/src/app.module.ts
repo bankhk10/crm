@@ -7,6 +7,7 @@ import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { EmployeesModule } from './employees/employees.module';
 import { ThaiAddressModule } from './thai-address/thai-address.module';
+import { ActivitiesModule } from './activities/activities.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ThaiAddressModule } from './thai-address/thai-address.module';
     PermissionsModule,
     EmployeesModule,
     ThaiAddressModule,
+    ActivitiesModule,
   ],
 })
 export class AppModule {}
