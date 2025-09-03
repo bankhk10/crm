@@ -20,6 +20,7 @@ interface User {
   name: string;
   role: { name: string; permissions: any[] };
   type: 'Admin' | 'GM' | 'User';
+  department?: string | null;
 }
 
 interface AuthContextType {
