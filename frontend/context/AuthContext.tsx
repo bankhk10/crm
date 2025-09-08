@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
       toast.success(`เข้าสู่ระบบสำเร็จ`);
       if (userData.type === 'Admin') {
-        router.push('/admin');
+        router.push('/dashboard');
       } else {
         router.push('/dashboard');
       }
