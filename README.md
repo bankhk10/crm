@@ -19,7 +19,10 @@ JWT_REFRESH_SECRET=your-super-secret-key-for-refresh-token
 Hot reloading for both frontend and backend.
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+docker-compose -f docker-compose.dev.yml up --build
+docker-compose -f docker-compose.dev.yml up --build -d
+
 ```
 
 ### Production
