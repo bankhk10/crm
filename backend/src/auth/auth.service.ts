@@ -29,11 +29,23 @@ export class AuthService {
 
   async login(loginDto: LoginDto) {
     const user = await this.usersService.findOneByEmailWithPassword(loginDto.email);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
-    const isMatch = await bcrypt.compare(loginDto.password, user.password);
-    if (!isMatch) throw new UnauthorizedException('Invalid credentials');
-    if (user.status && user.status.toLowerCase() === 'inactive') throw new UnauthorizedException('User inactive');
-    return this.generateTokens(user.id, user.email, user.role.name, user.type);
+    const isValid =
+      user && (await bcrypt.compare(loginDto.password, user.password));
+
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    if (user.status?.toLowerCase() === 'inactive') {
+      throw new UnauthorizedException('User inactive');
+    }
+
+    return this.generateTokens(
+      user.id,
+      user.email,
+      user.role.name,
+      user.type,
+    );
   }
 
   async refreshToken(refreshToken: string) {
