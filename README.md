@@ -25,12 +25,7 @@ docker-compose -f docker-compose.dev.yml up --build -d
 
 ```
 
-### Production
-Runs optimized builds suitable for deployment.
 
-```bash
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build
-```
 
 ### Stopping Containers
 Press `Ctrl + C` and run:
