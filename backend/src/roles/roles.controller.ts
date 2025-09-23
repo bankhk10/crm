@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto';
 @ApiTags('roles')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -35,5 +36,23 @@ export class RolesController {
   @Roles('ADMIN')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.rolesService.remove(id);
+  }
+
+  @Post(':id/permissions/assign')
+  @Roles('ADMIN')
+  assignPermissions(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRolePermissionsDto: UpdateRolePermissionsDto,
+  ) {
+    return this.rolesService.assignPermissions(id, updateRolePermissionsDto.permissionIds);
+  }
+
+  @Post(':id/permissions/unassign')
+  @Roles('ADMIN')
+  unassignPermissions(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateRolePermissionsDto: UpdateRolePermissionsDto,
+  ) {
+    return this.rolesService.unassignPermissions(id, updateRolePermissionsDto.permissionIds);
   }
 }

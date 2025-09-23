@@ -21,11 +21,14 @@ interface Role {
   id: number;
   name: string;
 }
+interface UserRole {
+  role: Role;
+}
 interface User {
   id: number;
   email: string;
   name: string;
-  role: Role;
+  userRoles: UserRole[];
   createdAt: string;
 }
 
@@ -116,7 +119,12 @@ const UserCard = ({ user, onDelete }: { user: User; onDelete: () => void }) => {
         {/* name + role */}
         <h3 className="font-bold text-lg text-gray-800 mt-2">{user.name}</h3>
         <p className="text-sm text-gray-500 mb-3">
-          {user.role.name === "USER" ? "เซลล์" : user.role.name}
+          {(() => {
+            const roleNames = user.userRoles?.map((relation) => relation.role.name) ?? [];
+            if (!roleNames.length) return 'ไม่ระบุบทบาท';
+            if (roleNames.length === 1 && roleNames[0] === 'USER') return 'เซลล์';
+            return roleNames.join(', ');
+          })()}
         </p>
 
         {/* center buttons */}
@@ -169,14 +177,15 @@ export default function EmployeePage() {
   };
 
   useEffect(() => {
-    if (!isLoading && currentUser?.role.name !== "ADMIN") {
+    const isAdmin = currentUser?.roles?.includes("SUPER_ADMIN") || currentUser?.roles?.includes("ADMIN");
+    if (!isLoading && !isAdmin) {
       toast.error(
         "Access Denied: You don't have permission to view this page."
       );
       router.push("/dashboard");
       return;
     }
-    if (currentUser) {
+    if (currentUser && isAdmin) {
       fetchData();
     }
   }, [currentUser, isLoading, router]);

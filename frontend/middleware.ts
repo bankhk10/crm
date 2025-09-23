@@ -20,8 +20,8 @@ export function middleware(request: NextRequest) {
   // If trying to access auth page while logged in, redirect to proper page
   if (accessToken && authRoutes.includes(pathname)) {
     const payload: any = decodeToken(accessToken);
-    const role = payload?.type || payload?.role;
-    const target = role === 'Admin' ? '/admin' : '/dashboard';
+    const roles: string[] = payload?.roles ?? [];
+    const target = roles.includes('SUPER_ADMIN') || roles.includes('ADMIN') ? '/admin' : '/dashboard';
     return NextResponse.redirect(new URL(target, request.url));
   }
 

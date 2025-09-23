@@ -21,11 +21,14 @@ interface Role {
   id: number;
   name: string;
 }
+interface UserRole {
+  role: Role;
+}
 interface User {
   id: number;
   email: string;
   name: string;
-  role: Role;
+  userRoles: UserRole[];
   createdAt: string;
 }
 
@@ -70,22 +73,28 @@ const mockActivities = [
 ];
 
 // --- Left Panel Component ---
-const UserProfilePanel = ({ user }: { user: User }) => (
-  <div className="w-full lg:w-1/4 xl:w-1/5 bg-white rounded-2xl shadow-lg p-6 self-start lg:sticky lg:top-8">
-    <div className="flex flex-col items-center text-center">
-      <div className="relative w-28 h-28 rounded-full overflow-hidden mb-4 border-4 border-gray-200">
-        <Image
-          src="/images/man-avatar.png"
-          alt={user.name}
-          layout="fill"
-          className="object-cover"
-        />
+const UserProfilePanel = ({ user }: { user: User }) => {
+  const roleNames = user.userRoles?.map((relation) => relation.role.name) ?? [];
+  const displayRole = roleNames.length
+    ? roleNames.join(', ')
+    : 'ไม่ระบุบทบาท';
+
+  return (
+    <div className="w-full lg:w-1/4 xl:w-1/5 bg-white rounded-2xl shadow-lg p-6 self-start lg:sticky lg:top-8">
+      <div className="flex flex-col items-center text-center">
+        <div className="relative w-28 h-28 rounded-full overflow-hidden mb-4 border-4 border-gray-200">
+          <Image
+            src="/images/man-avatar.png"
+            alt={user.name}
+            layout="fill"
+            className="object-cover"
+          />
+        </div>
+        <h2 className="text-xl font-bold text-gray-800">{user.name}</h2>
+        <p className="text-gray-500">
+          {roleNames.length === 1 && roleNames[0] === 'USER' ? 'พนักงานขาย' : displayRole}
+        </p>
       </div>
-      <h2 className="text-xl font-bold text-gray-800">{user.name}</h2>
-      <p className="text-gray-500">
-        {user.role.name === "USER" ? "พนักงานขาย" : user.role.name}
-      </p>
-    </div>
 
     <div className="border-t border-gray-200 my-6"></div>
 
@@ -134,7 +143,8 @@ const UserProfilePanel = ({ user }: { user: User }) => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // --- Activity Card Component ---
 const ActivityCard = ({

@@ -195,15 +195,16 @@ export default function Sidebar({
   const { user } = useAuth();
 
   const filteredNavItems = navItems.filter((item) => {
-    const roleName = user?.role.name;
+    const userRoles = user?.roles ?? [];
     const userType = user?.type as keyof typeof typeMenuRestrictions;
 
     if (item.href.startsWith("/dashboard/roles")) {
       return userType === "Admin";
     }
 
-    const roleRestricted =
-      roleMenuRestrictions[roleName as keyof typeof roleMenuRestrictions] || [];
+    const roleRestricted = userRoles.flatMap(
+      (role) => roleMenuRestrictions[role as keyof typeof roleMenuRestrictions] || [],
+    );
     const typeRestricted = typeMenuRestrictions[userType] || [];
     return (
       !roleRestricted.includes(item.href) &&

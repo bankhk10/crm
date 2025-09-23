@@ -1,27 +1,52 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { CreateEmployeeDto } from "./dto/create-employee.dto";
-import { UpdateEmployeeDto } from "./dto/update-employee.dto";
-import * as bcrypt from "bcrypt";
-import type { Prisma } from "@prisma/client";
-import { BadRequestException } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import * as bcrypt from 'bcrypt';
+
+const employeeInclude = {
+  userRoles: {
+    include: {
+      role: true,
+    },
+  },
+} as const;
 
 @Injectable()
 export class EmployeesService {
   constructor(private prisma: PrismaService) {}
+
+  private async resolveRoleIds(roleIds?: number[]) {
+    if (roleIds?.length) {
+      const uniqueRoleIds = Array.from(new Set(roleIds));
+      const roles = await this.prisma.role.findMany({
+        where: { id: { in: uniqueRoleIds } },
+        select: { id: true },
+      });
+      if (roles.length !== uniqueRoleIds.length) {
+        throw new NotFoundException('One or more roles were not found.');
+      }
+      return uniqueRoleIds;
+    }
+
+    const defaultRole = await this.prisma.role.findUnique({ where: { name: 'USER' } });
+    if (!defaultRole) {
+      throw new NotFoundException('Default USER role not found');
+    }
+    return [defaultRole.id];
+  }
 
   async create(createEmployeeDto: CreateEmployeeDto) {
     const {
       employeeId,
       email,
       password,
-      roleId,
       firstName,
       lastName,
-      ...data
+      roleIds,
+      ...rest
     } = createEmployeeDto;
 
-    // เช็ค employeeId ซ้ำ
     const existEmpId = await this.prisma.user.findUnique({
       where: { employeeId },
     });
@@ -29,46 +54,43 @@ export class EmployeesService {
       throw new BadRequestException(`รหัสพนักงาน ${employeeId} ถูกใช้งานแล้ว`);
     }
 
-    // เช็ค email ซ้ำ
     const existEmail = await this.prisma.user.findUnique({ where: { email } });
     if (existEmail) {
       throw new BadRequestException(`อีเมล ${email} ถูกใช้งานแล้ว`);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    let finalRoleId = roleId;
-    if (!finalRoleId) {
-      const userRole = await this.prisma.role.findUnique({
-        where: { name: "USER" },
-      });
-      if (!userRole) throw new Error("Default USER role not found");
-      finalRoleId = userRole.id;
-    }
+    const resolvedRoleIds = await this.resolveRoleIds(roleIds);
 
     const user = await this.prisma.user.create({
       data: {
         employeeId,
         email,
-        ...data,
+        ...rest,
         firstName,
         lastName,
-        name: [firstName, lastName].filter(Boolean).join(" ") || undefined,
+        name: [firstName, lastName].filter(Boolean).join(' ') || undefined,
         password: hashedPassword,
-        roleId: finalRoleId,
+        userRoles: {
+          create: resolvedRoleIds.map((roleId) => ({ role: { connect: { id: roleId } } })),
+        },
       },
+      include: employeeInclude,
     });
 
     const { password: _pwd, ...result } = user;
+    void _pwd;
     return result;
   }
 
   findAll() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({ include: employeeInclude });
   }
 
   async findOne(id: string) {
     const employee = await this.prisma.user.findUnique({
       where: { employeeId: id },
+      include: employeeInclude,
     });
     if (!employee) {
       throw new NotFoundException(`Employee with ID ${id} not found`);
@@ -77,8 +99,24 @@ export class EmployeesService {
   }
 
   async update(id: string, updateEmployeeDto: UpdateEmployeeDto) {
-    const { employeeId, email, password, firstName, lastName, ...rest } =
-      updateEmployeeDto;
+    const existing = await this.prisma.user.findUnique({
+      where: { employeeId: id },
+      include: { userRoles: true },
+    });
+    if (!existing) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
+    }
+
+    const {
+      employeeId,
+      email,
+      password,
+      firstName,
+      lastName,
+      roleIds,
+      ...rest
+    } = updateEmployeeDto;
+
     const data: any = { ...rest };
 
     if (employeeId && employeeId !== id) {
@@ -86,18 +124,16 @@ export class EmployeesService {
         where: { employeeId },
       });
       if (existEmpId) {
-        throw new BadRequestException(
-          `รหัสพนักงาน ${employeeId} ถูกใช้งานแล้ว`,
-        );
+        throw new BadRequestException(`รหัสพนักงาน ${employeeId} ถูกใช้งานแล้ว`);
       }
       data.employeeId = employeeId;
     }
 
-    if (email) {
+    if (email && email !== existing.email) {
       const existEmail = await this.prisma.user.findUnique({
         where: { email },
       });
-      if (existEmail && existEmail.employeeId !== id) {
+      if (existEmail && existEmail.id !== existing.id) {
         throw new BadRequestException(`อีเมล ${email} ถูกใช้งานแล้ว`);
       }
       data.email = email;
@@ -106,6 +142,7 @@ export class EmployeesService {
     if (password) {
       data.password = await bcrypt.hash(password, 10);
     }
+
     if (firstName !== undefined) {
       data.firstName = firstName;
     }
@@ -113,17 +150,58 @@ export class EmployeesService {
       data.lastName = lastName;
     }
     if (firstName !== undefined || lastName !== undefined) {
-      const existing = await this.prisma.user.findUnique({
-        where: { employeeId: id },
-      });
-      const newFirst = firstName ?? existing?.firstName ?? "";
-      const newLast = lastName ?? existing?.lastName ?? "";
+      const newFirst = firstName ?? existing.firstName ?? '';
+      const newLast = lastName ?? existing.lastName ?? '';
       data.name = `${newFirst} ${newLast}`.trim();
     }
-    return this.prisma.user.update({ where: { employeeId: id }, data });
+
+    if (roleIds) {
+      const resolvedRoleIds = await this.resolveRoleIds(roleIds);
+      const adminRole = await this.prisma.role.findUnique({ where: { name: 'ADMIN' } });
+      if (adminRole) {
+        const hadAdmin = existing.userRoles.some((role) => role.roleId === adminRole.id);
+        const willHaveAdmin = resolvedRoleIds.includes(adminRole.id);
+        if (hadAdmin && !willHaveAdmin) {
+          const adminCount = await this.prisma.userRole.count({ where: { roleId: adminRole.id } });
+          if (adminCount <= 1) {
+            throw new BadRequestException('Cannot remove the last admin role.');
+          }
+        }
+      }
+      data.userRoles = {
+        deleteMany: { userId: existing.id },
+        create: resolvedRoleIds.map((roleId) => ({ role: { connect: { id: roleId } } })),
+      };
+    }
+
+    return this.prisma.user.update({
+      where: { id: existing.id },
+      data,
+      include: employeeInclude,
+    });
   }
 
-  remove(id: string) {
-    return this.prisma.user.delete({ where: { employeeId: id } });
+  async remove(id: string) {
+    const existing = await this.prisma.user.findUnique({
+      where: { employeeId: id },
+      include: { userRoles: true },
+    });
+    if (!existing) {
+      throw new NotFoundException(`Employee with ID ${id} not found`);
+    }
+
+    const adminRole = await this.prisma.role.findUnique({ where: { name: 'ADMIN' } });
+    if (adminRole) {
+      const hasAdmin = existing.userRoles.some((role) => role.roleId === adminRole.id);
+      if (hasAdmin) {
+        const adminCount = await this.prisma.userRole.count({ where: { roleId: adminRole.id } });
+        if (adminCount <= 1) {
+          throw new ForbiddenException('Cannot delete the last admin.');
+        }
+      }
+    }
+
+    await this.prisma.userRole.deleteMany({ where: { userId: existing.id } });
+    return this.prisma.user.delete({ where: { id: existing.id } });
   }
 }

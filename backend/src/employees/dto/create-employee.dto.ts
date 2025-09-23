@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsInt, IsEmail, IsDateString, MinLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsInt,
+  IsEmail,
+  IsDateString,
+  MinLength,
+  IsArray,
+  ArrayUnique,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateEmployeeDto {
@@ -38,9 +47,11 @@ export class CreateEmployeeDto {
   password: string;
 
   @IsOptional()
+  @IsArray()
+  @ArrayUnique()
   @Type(() => Number)
-  @IsInt()
-  roleId?: number;
+  @IsInt({ each: true })
+  roleIds?: number[];
 
   @IsOptional()
   @IsDateString()

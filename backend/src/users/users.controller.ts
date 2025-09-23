@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, BadRequestException, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, ParseIntPipe } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UpdateUserRolesDto } from './dto/update-user-roles.dto';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -47,5 +48,23 @@ export class UsersController {
   remove(@Request() req, @Param('id', ParseIntPipe) id: number) {
     const currentUserId = req.user.userId;
     return this.usersService.remove(id, currentUserId);
+  }
+
+  @Post(':id/roles/assign')
+  @Roles('ADMIN')
+  assignRoles(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserRolesDto: UpdateUserRolesDto,
+  ) {
+    return this.usersService.assignRoles(id, updateUserRolesDto.roleIds);
+  }
+
+  @Post(':id/roles/unassign')
+  @Roles('ADMIN')
+  unassignRoles(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserRolesDto: UpdateUserRolesDto,
+  ) {
+    return this.usersService.unassignRoles(id, updateUserRolesDto.roleIds);
   }
 }

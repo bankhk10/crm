@@ -15,6 +15,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 // ✅ เพิ่มสำหรับ Date Picker ของ shadcn
 import { Button } from "@/components/ui/button";
@@ -43,7 +45,7 @@ type EditEmployeeFormInputs = {
   phone: string;
   email: string;
   password?: string;
-  roleId: string;
+  roleIds: number[];
   birthDate: string; // เก็บเป็น ISO string ในฟอร์ม
   address: string;
   subdistrict: string;
@@ -74,7 +76,7 @@ export default function EditEmployeePage() {
     formState: { isSubmitting, errors },
   } = useForm<EditEmployeeFormInputs>({
     defaultValues: {
-      roleId: undefined, // ✅ อย่าส่งเป็น ""
+      roleIds: [],
     },
   });
 
@@ -114,7 +116,7 @@ export default function EditEmployeePage() {
           gender: user.gender ?? "",
           phone: user.phone ?? "",
           email: user.email ?? "",
-          roleId: user.roleId != null ? String(user.roleId) : undefined, // ✅
+          roleIds: user.userRoles?.map((relation: { role: Role }) => relation.role.id) ?? [],
           birthDate: "",
           address: user.address ?? "",
           subdistrict: "",
@@ -176,7 +178,7 @@ export default function EditEmployeePage() {
         ? new Date(data.startDate).toISOString()
         : undefined,
       endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
-      roleId: Number(data.roleId),
+      roleIds: data.roleIds,
     };
     if (!data.password) delete payload.password;
 
@@ -694,41 +696,39 @@ export default function EditEmployeePage() {
               </label>
 
               <Controller
-                name="roleId"
+                name="roleIds"
                 control={control}
-                rules={{ required: "กรุณาเลือกสิทธิ์การใช้งาน" }}
+                rules={{
+                  validate: (value) =>
+                    value && value.length > 0 ? true : 'กรุณาเลือกสิทธิ์การใช้งาน',
+                }}
                 render={({ field }) => (
-                  <Select
-                    // รี-mount เมื่อ roles มา หรือค่า roleId เปลี่ยน เพื่อให้ sync กับรายการ
-                    key={`${roles.length}-${field.value ?? ""}`}
-                    value={field.value ?? undefined} // ใช้ nullish เพื่อไม่ทับค่า "0"
-                    defaultValue={field.value ?? undefined} // เผื่อ first paint
-                    onValueChange={field.onChange}
-                    disabled={roles.length === 0} // กันคลิกระหว่างกำลังโหลด
-                  >
-                    <SelectTrigger
-                      className={cn(
-                        "w-full",
-                        errors.roleId && "border-red-500"
-                      )}
-                    >
-                      <SelectValue placeholder="กรุณาเลือก" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {roles.map((r) => (
-                        <SelectItem key={r.id} value={String(r.id)}>
-                          {r.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="grid gap-2">
+                    {roles.map((role) => (
+                      <Label key={role.id} className="flex items-center gap-2 font-normal">
+                        <Checkbox
+                          checked={field.value?.includes(role.id) ?? false}
+                          onCheckedChange={(checked) => {
+                            const current = new Set(field.value ?? []);
+                            if (checked) {
+                              current.add(role.id);
+                            } else {
+                              current.delete(role.id);
+                            }
+                            field.onChange(Array.from(current));
+                          }}
+                        />
+                        {role.name}
+                      </Label>
+                    ))}
+                  </div>
                 )}
               />
 
-              {errors.roleId && (
+              {errors.roleIds && (
                 <p className="flex items-center mt-1 text-xs text-red-500">
                   <AlertTriangle size={14} className="mr-1" />
-                  {errors.roleId.message as string}
+                  {errors.roleIds.message as string}
                 </p>
               )}
             </div>

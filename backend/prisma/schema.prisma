@@ -6,44 +6,42 @@ generator client {
 }
 
 datasource db {
-  provider          = "mysql"
-  url               = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  employeeId     String   @unique
-  email          String   @unique
-  password       String
-  name           String?
-  prefix         String?
-  firstName      String?
-  lastName       String?
-  age            Int?
-  gender         String?
-  phone          String?
-  birthDate      DateTime?
-  address        String?
-  subdistrict    String?
-  district       String?
-  province       String?
-  postalCode     String?
-  position       String?
-  department     String?
-  startDate      DateTime?
-  endDate        DateTime?
-  managerId      String?
-  status         String?  @default("Active")
-  company        String?
+  id              Int       @id @default(autoincrement())
+  employeeId      String    @unique
+  email           String    @unique
+  password        String
+  name            String?
+  prefix          String?
+  firstName       String?
+  lastName        String?
+  age             Int?
+  gender          String?
+  phone           String?
+  birthDate       DateTime?
+  address         String?
+  subdistrict     String?
+  district        String?
+  province        String?
+  postalCode      String?
+  position        String?
+  department      String?
+  startDate       DateTime?
+  endDate         DateTime?
+  managerId       String?
+  status          String?   @default("Active")
+  company         String?
   responsibleArea String?
-  type           String  @default("User")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  type            String    @default("User")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  role   Role @relation(fields: [roleId], references: [id])
-  roleId Int
-
-  activities     Activity[]
+  activities Activity[]
+  userRoles  UserRole[]
 }
 
 model Activity {
@@ -55,47 +53,70 @@ model Activity {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdBy User @relation(fields: [createdById], references: [id])
 }
 
 model Role {
-  id          Int          @id @default(autoincrement())
-  name        String       @unique
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  users       User[]
-  permissions Permission[]
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
 }
 
 model Permission {
-  id        Int      @id @default(autoincrement())
-  action    String // e.g., 'create', 'read', 'update', 'delete'
-  subject   String // e.g., 'user', 'role', 'product'
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  roles     Role[]
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@unique([action, subject])
+  rolePermissions RolePermission[]
+}
+
+model UserRole {
+  userId     Int
+  roleId     Int
+  assignedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  assignedAt   DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
 }
 
 model Province {
-  id       Int      @id
+  id       Int       @id
   name_th  String
   amphures Amphure[]
 }
 
 model Amphure {
-  id          Int       @id
+  id          Int      @id
   name_th     String
   province_id Int
-  province    Province  @relation(fields: [province_id], references: [id])
+  province    Province @relation(fields: [province_id], references: [id])
   tambons     Tambon[]
 }
 
 model Tambon {
-  id         Int      @id
+  id         Int     @id
   name_th    String
   amphure_id Int
   zip_code   Int?
-  amphure    Amphure  @relation(fields: [amphure_id], references: [id])
+  amphure    Amphure @relation(fields: [amphure_id], references: [id])
 }
