@@ -18,7 +18,8 @@ interface User {
   id: number;
   email: string;
   name: string;
-  role: { name: string; permissions: any[] };
+  roles: string[];
+  permissions: string[];
   type: 'Admin' | 'GM' | 'User';
   department?: string | null;
 }
@@ -72,7 +73,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           // Set the auth header for the initial request
           api.defaults.headers.Authorization = `Bearer ${accessToken}`;
           const profile = await api.get('/auth/profile');
-          const userData = { ...profile.data, type: profile.data.type || 'User' };
+          const userData: User = {
+            ...profile.data,
+            roles: profile.data.roles ?? [],
+            permissions: profile.data.permissions ?? [],
+            type: profile.data.type || 'User',
+          };
           setUser(userData);
           startTokenTimer(accessToken);
         } catch (error) {
@@ -117,11 +123,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Fetch user profile to update the state
     api.get('/auth/profile').then(response => {
-      const userData = { ...response.data, type: response.data.type || 'User' };
+      const userData: User = {
+        ...response.data,
+        roles: response.data.roles ?? [],
+        permissions: response.data.permissions ?? [],
+        type: response.data.type || 'User',
+      };
       setUser(userData);
       toast.success(`เข้าสู่ระบบสำเร็จ`);
-      if (userData.type === 'Admin') {
-        router.push('/dashboard');
+      if (userData.roles?.includes('SUPER_ADMIN') || userData.roles?.includes('ADMIN')) {
+        router.push('/admin');
       } else {
         router.push('/dashboard');
       }

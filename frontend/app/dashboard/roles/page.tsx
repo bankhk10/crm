@@ -7,6 +7,7 @@ import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/lib/api';
+import { useRBAC } from '@/src/lib/rbac';
 
 import {
   PlusCircle,
@@ -218,6 +219,7 @@ function DeleteRoleDialog({
 
 export default function AdminRolesPage() {
   const { user, isLoading } = useAuth();
+  const { hasRole } = useRBAC();
   const router = useRouter();
 
   const [roles, setRoles] = useState<Role[]>([]);
@@ -316,7 +318,7 @@ export default function AdminRolesPage() {
     }
   };
 
-  if (isLoading || !user || user.role?.name !== 'ADMIN') {
+  if (isLoading || !user || !hasRole('SUPER_ADMIN', 'ADMIN')) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="animate-pulse text-sm text-gray-500">Checking permissions…</div>

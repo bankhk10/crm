@@ -18,10 +18,11 @@ export class ActivitiesService {
   }
 
   findAll(user: any) {
-    if (user.role?.name === 'ADMIN') {
+    const roles: string[] = user.roles ?? [];
+    if (roles.includes('SUPER_ADMIN') || roles.includes('ADMIN')) {
       return this.prisma.activity.findMany();
     }
-    if (user.role?.name === 'MANAGER') {
+    if (roles.includes('MANAGER')) {
       return this.prisma.activity.findMany({
         where: { department: user.department || undefined },
       });
@@ -51,8 +52,9 @@ export class ActivitiesService {
   }
 
   private canAccess(activity: any, user: any) {
-    if (user.role?.name === 'ADMIN') return true;
-    if (user.role?.name === 'MANAGER' && activity.department === user.department) return true;
+    const roles: string[] = user.roles ?? [];
+    if (roles.includes('SUPER_ADMIN') || roles.includes('ADMIN')) return true;
+    if (roles.includes('MANAGER') && activity.department === user.department) return true;
     return activity.createdById === user.userId;
   }
 }

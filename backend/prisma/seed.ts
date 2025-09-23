@@ -8,15 +8,9 @@ async function main() {
   console.log('🌱 Seeding database...');
 
   const [provinceData, amphureData, tambonData] = await Promise.all([
-    fetch(
-      'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json'
-    ).then((r) => r.json()),
-    fetch(
-      'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json'
-    ).then((r) => r.json()),
-    fetch(
-      'https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json'
-    ).then((r) => r.json()),
+    fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json').then((r) => r.json()),
+    fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json').then((r) => r.json()),
+    fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json').then((r) => r.json()),
   ]);
 
   await prisma.province.createMany({
@@ -43,53 +37,66 @@ async function main() {
     skipDuplicates: true,
   });
 
-  const actions = ['create', 'read', 'update', 'delete'];
-  const subjects = ['user', 'marketing', 'sales', 'report'];
-
-  const permissions = subjects.flatMap((subject) =>
-    actions.map((action) => ({ action, subject }))
-  );
-  await prisma.permission.createMany({ data: permissions, skipDuplicates: true });
-
-  const connectAll = permissions.map((p) => ({
-    action_subject: { action: p.action, subject: p.subject },
-  }));
-  const connectSubject = (subject: string, allowDelete: boolean) =>
-    actions
-      .filter((a) => allowDelete || a !== 'delete')
-      .map((action) => ({ action_subject: { action, subject } }));
-  const readSubject = (subject: string) => [
-    { action_subject: { action: 'read', subject } },
+  const permissionNames = [
+    'read_user',
+    'add_user',
+    'edit_user',
+    'remove_user',
+    'assign_role_to_user',
+    'unassign_role_from_user',
+    'read_role',
+    'add_role',
+    'edit_role',
+    'remove_role',
+    'assign_permission_to_role',
+    'unassign_permission_from_role',
+    'read_permission',
+    'add_permission',
+    'edit_permission',
+    'remove_permission',
   ];
 
-  const roleSpecs = [
-    { name: 'ADMIN', perms: connectAll },
-    { name: 'USER', perms: [] },
-    { name: 'CEO', perms: connectAll },
-    {
-      name: 'MARKETING_MANAGER',
-      perms: connectSubject('marketing', true).concat(readSubject('report')),
-    },
-    { name: 'MARKETING_HEAD', perms: connectSubject('marketing', true) },
-    { name: 'MARKETING_EMPLOYEE', perms: connectSubject('marketing', false) },
-    {
-      name: 'SALES_MANAGER',
-      perms: connectSubject('sales', true).concat(readSubject('report')),
-    },
-    { name: 'SALES_HEAD', perms: connectSubject('sales', true) },
-    { name: 'SALES_EMPLOYEE', perms: connectSubject('sales', false) },
-  ];
-
-  const roles: Record<string, { id: number }> = {};
-  for (const spec of roleSpecs) {
-    roles[spec.name] = await prisma.role.upsert({
-      where: { name: spec.name },
+  const permissions: Record<string, { id: number }> = {};
+  for (const name of permissionNames) {
+    const permission = await prisma.permission.upsert({
+      where: { name },
       update: {},
-      create: {
-        name: spec.name,
-        ...(spec.perms.length ? { permissions: { connect: spec.perms } } : {}),
-      },
+      create: { name },
     });
+    permissions[name] = permission;
+  }
+
+  const rolePermissionMap: Record<string, string[]> = {
+    SUPER_ADMIN: permissionNames,
+    ADMIN: permissionNames.filter(
+      (name) => !['add_permission', 'edit_permission', 'remove_permission'].includes(name),
+    ),
+    MANAGER: [
+      'read_user',
+      'add_user',
+      'edit_user',
+      'assign_role_to_user',
+      'unassign_role_from_user',
+      'read_role',
+    ],
+    USER: ['read_user'],
+    GUEST: [],
+  };
+
+  for (const roleName of Object.keys(rolePermissionMap)) {
+    const role = await prisma.role.upsert({
+      where: { name: roleName },
+      update: {},
+      create: { name: roleName },
+    });
+    await prisma.rolePermission.deleteMany({ where: { roleId: role.id } });
+    const permissionIds = rolePermissionMap[roleName].map((perm) => permissions[perm].id);
+    if (permissionIds.length) {
+      await prisma.rolePermission.createMany({
+        data: permissionIds.map((permissionId) => ({ roleId: role.id, permissionId })),
+        skipDuplicates: true,
+      });
+    }
   }
 
   const passwordHash = await bcrypt.hash('admin@example.com', 10);
@@ -99,8 +106,8 @@ async function main() {
       employeeId: 'EMP001',
       email: 'admin@example.com',
       prefix: 'Mr.',
-      firstName: 'Admin',
-      lastName: 'System',
+      firstName: 'Super',
+      lastName: 'Admin',
       age: 30,
       gender: 'Male',
       phone: '0800000000',
@@ -113,75 +120,54 @@ async function main() {
       startDate: new Date(),
       status: 'Active',
       company: 'My Company',
-      role: 'ADMIN',
+      roles: ['SUPER_ADMIN'],
+      type: 'Admin',
     },
     {
       employeeId: 'EMP002',
-      email: 'user@example.com',
-      prefix: 'Ms.',
-      firstName: 'Normal',
-      lastName: 'User',
-      age: 25,
-      gender: 'Female',
-      phone: '0811111111',
-      birthDate: new Date('1999-05-05'),
-      address: '456 Main St',
-      province: 'Chiang Mai',
-      postalCode: '50000',
-      position: 'Staff',
+      email: 'manager@example.com',
+      firstName: 'Team',
+      lastName: 'Manager',
+      position: 'Manager',
       department: 'Sales',
       startDate: new Date(),
       status: 'Active',
-      company: 'My Company',
-      role: 'USER',
-    },
-    { employeeId: 'EMP010', email: 'ceo@example.com', name: 'CEO', role: 'CEO' },
-    {
-      employeeId: 'EMP011',
-      email: 'marketing.manager@example.com',
-      name: 'Marketing Manager',
-      role: 'MARKETING_MANAGER',
+      roles: ['MANAGER'],
+      type: 'GM',
     },
     {
       employeeId: 'EMP003',
-      email: 'marketing.head@example.com',
-      name: 'Marketing Head',
-      role: 'MARKETING_HEAD',
+      email: 'user@example.com',
+      firstName: 'Regular',
+      lastName: 'User',
+      status: 'Active',
+      roles: ['USER'],
+      type: 'User',
     },
     {
       employeeId: 'EMP004',
-      email: 'marketing.employee@example.com',
-      name: 'Marketing Employee',
-      role: 'MARKETING_EMPLOYEE',
-    },
-    {
-      employeeId: 'EMP012',
-      email: 'sales.manager@example.com',
-      name: 'Sales Manager',
-      role: 'SALES_MANAGER',
-    },
-    {
-      employeeId: 'EMP005',
-      email: 'sales.head@example.com',
-      name: 'Sales Head',
-      role: 'SALES_HEAD',
-    },
-    {
-      employeeId: 'EMP006',
-      email: 'sales.employee@example.com',
-      name: 'Sales Employee',
-      role: 'SALES_EMPLOYEE',
+      email: 'guest@example.com',
+      firstName: 'Guest',
+      lastName: 'Viewer',
+      status: 'Active',
+      roles: ['GUEST'],
+      type: 'User',
     },
   ];
 
-  for (const { role, ...data } of userSpecs) {
+  for (const { roles: roleNames, ...data } of userSpecs) {
     await prisma.user.upsert({
       where: { email: data.email },
       update: {},
       create: {
         ...data,
+        name: [data.firstName, data.lastName].filter(Boolean).join(' ') || undefined,
         password: passwordHash,
-        roleId: roles[role].id,
+        userRoles: {
+          create: roleNames.map((roleName) => ({
+            role: { connect: { name: roleName } },
+          })),
+        },
       },
     });
   }

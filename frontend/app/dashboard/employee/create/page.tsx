@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { toast } from "sonner";
@@ -26,6 +26,8 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import ThaiAddressPicker from "@/components/ThaiAddressPicker";
 
@@ -45,7 +47,7 @@ type CreateEmployeeFormInputs = {
   email: string;
   password: string;
   userType: string;
-  roleId: string;
+  roleIds: number[];
   birthDate: string;
   address: string;
   subdistrict: string;
@@ -71,7 +73,7 @@ export default function CreateEmployeePage() {
     formState: { isSubmitting, errors },
   } = useForm<CreateEmployeeFormInputs>({
     shouldFocusError: true,
-    defaultValues: { userType: "User" },
+    defaultValues: { userType: "User", roleIds: [] },
   });
   const [roles, setRoles] = useState<Role[]>([]);
   const [birthDate, setBirthDate] = useState<Date | undefined>();
@@ -107,7 +109,7 @@ export default function CreateEmployeePage() {
         ? new Date(data.startDate).toISOString()
         : undefined,
       endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
-      roleId: Number(data.roleId),
+      roleIds: data.roleIds,
       type: userType,
     };
     try {
@@ -661,36 +663,41 @@ export default function CreateEmployeePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 สิทธิ์การใช้งาน *
               </label>
-              <Select
-                onValueChange={(value) =>
-                  setValue("roleId", value, { shouldValidate: true })
-                }
-              >
-                <SelectTrigger
-                  className={cn("w-full", errors.roleId && "border-red-500")}
-                >
-                  <SelectValue placeholder="กรุณาเลือก" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => (
-                    <SelectItem key={r.id} value={String(r.id)}>
-                      {r.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.roleId && (
+              <Controller
+                name="roleIds"
+                control={control}
+                rules={{
+                  validate: (value) =>
+                    value && value.length > 0 ? true : 'กรุณาเลือกสิทธิ์การใช้งาน',
+                }}
+                render={({ field }) => (
+                  <div className="grid gap-2">
+                    {roles.map((role) => (
+                      <Label key={role.id} className="flex items-center gap-2 font-normal">
+                        <Checkbox
+                          checked={field.value?.includes(role.id) ?? false}
+                          onCheckedChange={(checked) => {
+                            const current = new Set(field.value ?? []);
+                            if (checked) {
+                              current.add(role.id);
+                            } else {
+                              current.delete(role.id);
+                            }
+                            field.onChange(Array.from(current));
+                          }}
+                        />
+                        {role.name}
+                      </Label>
+                    ))}
+                  </div>
+                )}
+              />
+              {errors.roleIds && (
                 <p className="flex items-center mt-1 text-xs text-red-500">
                   <AlertTriangle size={14} className="mr-1" />
-                  {errors.roleId.message as string}
+                  {errors.roleIds.message as string}
                 </p>
               )}
-              <input
-                type="hidden"
-                {...register("roleId", {
-                  required: "กรุณาเลือกสิทธิ์การใช้งาน",
-                })}
-              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

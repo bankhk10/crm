@@ -51,8 +51,9 @@ export default function ActivitiesPage() {
 
   const canModify = (activity: Activity) => {
     if (!user) return false;
-    if (user.role?.name === 'ADMIN') return true;
-    if (user.role?.name === 'MANAGER' && user.department && activity.department === user.department)
+    const roles = user.roles ?? [];
+    if (roles.includes('SUPER_ADMIN') || roles.includes('ADMIN')) return true;
+    if (roles.includes('MANAGER') && user.department && activity.department === user.department)
       return true;
     return activity.createdById === user.id;
   };
